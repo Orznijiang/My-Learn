@@ -1,2 +1,7 @@
 /Games 101/resource
 *.vscode
+*.vs
+*.user
+*.filters
+*.vcxproj
+Debug
