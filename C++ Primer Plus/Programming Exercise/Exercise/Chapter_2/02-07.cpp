@@ -2,7 +2,7 @@
 
 using namespace std;
 
-int main() {
+int main07() {
 	int hour, minute;
 	cout << "Enter the number of hours: ";
 	cin >> hour;
