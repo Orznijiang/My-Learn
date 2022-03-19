@@ -2,7 +2,7 @@
 
 ## Homework 0
 
-作业0的内容主要是进行接下来的作业项目的环境配置。原本给的是一个已经配好环境的Ubuntu的虚拟机，装上就可以使用。我试着用那个环境写了前面几个作业，确实是挺好用的，省去了配置环境的麻烦。但奈何本人不太习惯使用Linux系统（菜），故还是尝试在Win10 + Visual Studio下配置环境，完成作业。
+作业0的内容主要是进行接下来的作业项目的环境配置。原本给的是一个已经配好环境的Ubuntu的虚拟机，装上就可以使用。我试着用那个环境写了前面几个作业，确实是挺好用的，省去了配置环境的麻烦。但奈何本人不太习惯使用Linux系统（菜），故还是尝试在Win10 + Visual Studio下配置环境，完成接下来的作业。
 
 配置的过程中参考了一些文章，贴在下面。
 
@@ -32,6 +32,29 @@ git clone https://github.com/microsoft/vcpkg
 ./vcpkg/vcpkg.exe install eigen3:x64-windows
 ./vcpkg/vcpkg.exe install opencv:x64-windows
 ```
+
+#### 3.集成开源库
+
+安装完开源库后，常规情况下，我们需要设置include目录、lib目录等，会有很多工作量。vcpkg提供了一套机制，可以全自动的适配目录，而开发者不需要关心已安装的库的目录在哪里，也不需要设置。这是vcpkg的一大优势。下面的命令将vcpkg安装的开源库集成到全局，“集成到全局”适用于Visual Studio开发环境和msbuild命令行。
+
+```
+./vcpkg/vcpkg.exe integrate install
+```
+
+当出现“Applied user-wide integration for this vcpkg root.”字样的时候，说明已经集成成功。这时候可以在任意的工程中使用安装好的第三方库。
+
+### Visual Studio 中的配置
+
+* 新建一个C++项目。
+* 在项目-属性-配置属性-C/C++-语言-C++语言标准 中，选择C++17。据说是后面有使用到std::optional这个C++17特性。同时要使用x64平台。（项目中必须有C/C++代码才会出现C/C++这一栏）
+
+![image-20220319212846663](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20101/homework/homework_notes/hw0_c++17.png?raw=true "修改语言标准")
+
+* 在项目-属性-配置属性-C/C++-预处理器-预处理器定义 中，加入`_CRT_SECURE_NO_WARNINGS`，消除某些警告。
+
+![image-20220319213031478](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20101/homework/homework_notes/hw0_define.png?raw=true "加入预处理器定义")
+
+至此，就算是配置完成了。
 
 ### 参考链接
 
