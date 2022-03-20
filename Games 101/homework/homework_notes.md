@@ -61,3 +61,55 @@ git clone https://github.com/microsoft/vcpkg
 * https://zhuanlan.zhihu.com/p/360640432
 * https://blog.csdn.net/cjmqas/article/details/79282847
 * https://blog.csdn.net/cjmqas/article/details/79282847
+
+
+
+## Homework 1
+
+作业1的内容主要是将`get_model_matrix`和`get_projection_matrix`两个函数补充完整，通过使用正确的变换矩阵，最终能够在窗口绘制出一个三角形。
+
+作业已经提供了基本的渲染程序框架，所以我们只需要在上面两个函数的实现中，返回正确的矩阵即可。关于矩阵变换的知识，主要集中在lecture_4。
+
+在函数`get_view_matrix`中已经给出了观察矩阵的实现，可以看到，默认是认为摄像机朝向-Z方向，所以只需要将摄像机的位置移动到原点（实际上，若摄像机默认不朝着-Z方向会更麻烦，不过课程中也有讲到，估计是为了降低第一个作业的难度）。我们可以根据这个函数的实现完成剩余矩阵的补充。
+
+```
+Eigen::Matrix4f translate;
+translate << 1, 0, 0, -eye_pos[0], 
+			 0, 1, 0, -eye_pos[1], 
+			 0, 0, 1, -eye_pos[2],、
+             0, 0, 0, 1;
+```
+
+### 模型矩阵
+
+作业的要求是实现绕着z轴的旋转，因此，可以直接应用z轴旋转的矩阵。
+
+![image-20220320191416537](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20101/homework/homework_notes/hw1_model_matrix.png?raw=true "绕Z轴旋转的矩阵公式")
+
+### 投影矩阵
+
+首先，我们需要将透视投影矩阵的视锥体范围转换为正交投影矩阵的立方体范围，这在课程中已经有了详细的推导。
+
+![image-20220320195727394](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20101/homework/homework_notes/hw1_proj_matrix_1.png?raw=true "pers-ortho matrix")
+
+其中第三行的内容为`(0, 0, n+f, -nf)`。
+
+这里有一点需要注意，由于观察矩阵使得摄像机朝向-Z方向，此时观察坐标系和世界坐标系的Z轴方向是相反的，因此需要将Z值取反，由于我们不能修改观察矩阵，这里直接将矩阵的（4,3）修改为-1也能起到同样的效果。
+
+将透视投影转换为正交投影后，剩下的工作就能够按照正交投影的方法快速解决了。
+
+先将立方体的中心移动到原点，课程给出了矩阵：
+
+![image-20220320200542929](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20101/homework/homework_notes/hw1_proj_matrix_2.png?raw=true "ortho-trans matrix")
+
+由于摄像机本身在原点，所以X轴和Y轴的偏移其实是可以省略的。
+
+然后，将立方体的取值范围缩放到[-1,1]：
+
+![image-20220320201051061](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20101/homework/homework_notes/hw1_proj_matrix_3.png?raw=true "ortho-scale matrix")
+
+最后，将上述3个矩阵进行组合，就构成了投影矩阵。
+
+### 运行结果参考
+
+![image-20220320201343196](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20101/homework/homework_notes/hw1_result.png?raw=true "result")
