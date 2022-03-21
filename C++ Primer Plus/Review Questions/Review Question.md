@@ -389,3 +389,181 @@
 ### 编程练习注意点
 
 * 函数`strcmp(str1, str2)`比较两个字符串，相等返回0，否则范围ASCLL码的差值
+
+
+
+## 第6章 分支语句和逻辑运算符
+
+1. **请看下面两个计算空格和换行符数目的代码片段：**
+
+   ```
+   // Version 1
+   while(cin.get(ch)) // quit on eof
+   {
+   	if(ch == ' ')
+   		spaces++;
+   	if(ch == '\n')
+   		newlines++;
+   }
+   
+   // Version 2
+   while(cin.get(ch)) // quit on eof
+   {
+   	if(ch == ' ')
+   		spaces++;
+   	else if(ch == '\n')
+   		newlines++;
+   }
+   ```
+
+   **第二种格式比第一种格式好在哪里呢？**
+
+   这两个版本将给出相同的答案，但 `if else` 版本的效率更高。例如，考虑当`ch`为空格时的情况。版本1对空格加1，然后看他是否为换行符，这将浪费时间。
+
+2. **在程序清单6.2中，用`ch+1`替换`++ch`将发生什么情况呢？**
+
+   `++ch`和`ch+1`得到的数值相同。但`++ch`的类型为`char`，将作为字符打印，而`ch+1`是`int`类型（因为将`char`和`int`相加），将作为数字打印。
+
+3. **请认真考虑下面的程序：**
+
+   ```
+   #include <iostream>
+   using namespace std;
+   int main()
+   {
+   	char ch;
+   	int ct1, ct2;
+   	
+   	ct1 = ct2 = 0;
+   	while((ch = cin.get()) != '$')
+   	{
+   		cout << ch;
+   		ct1++;
+   		if(ch = '$')
+   			ct2++;
+   		cout << ch;
+   	}
+   	cout << "ct1 = " << ct1 << ", ct2 = " << ct2 << "\n";
+   	return 0;
+   }
+   ```
+
+   **假设输入如下（请在每行末尾按回车键）：**
+
+   ```
+   Hi!
+   Send $10 or $20 now!
+   ```
+
+   **则输出将是什么（还记得吗，输入被缓冲）？**
+
+   注意`if`中是赋值语句。
+
+   ```
+   Hi!
+   H$i$!$
+   $Send $10 or $20 now!
+   S$e$n$d$ $ct1 = 9, ct2 = 9
+   ```
+
+   因为赋值语句的值为左值，这里恒为`true`，因此每次循环`ct1`和`ct2`都增加1。同时，由于换行符也会被读取和打印，所以在第二行换行后的第三行先打印了`$`。
+
+4. **创建表示下述条件的逻辑表达式**
+
+   1. **`weight`大于或等于115，但小于125。**
+
+      `weight >= 115 && weight < 125`
+
+   2. **`ch`为q或Q。**
+
+      `ch == 'q' || ch == 'Q'`
+
+   3. **`x`为偶数，但不是26。**
+
+      `x % 2 == 0 && x != 26` 
+
+   4. **`x`为偶数，但不是26的倍数。**
+
+      `x % 2 == 0 && x % 26 != 0`
+
+   5. **`donation`为1000-2000或`guest`为1。**
+
+      `donation >= 1000 && donation <= 2000 || guest == 1`
+
+   6. **`ch`是小写字母或大写字母（假设小写字母是依次编码的，大写字母也是依次编码的，但在大小写字母间编码不是连续的）。**
+
+      `(ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')`
+
+5. **在英语中，“I will not not speak（我不会不说）”的意思与“I will speak（我要说）”相同。在C++中，`!!x`是否与`x`相同呢？**
+
+   不一定。例如，若`x`为10，则`!x`为0，`!!x`为1。然而，如果`x`为`bool`变量，则`!!x`为`x`。
+
+6. **创建一个条件表达式，其值为变量的绝对值。也就是说，如果变量`x`为正，则表达式的值为`x`；但如果`x`为负，则表达式的值为`-x`——这是一个正值。**
+
+   `(x < 0)? -x : x;`
+
+7. **用`switch`改写下面的代码片段：**
+
+   ```
+   if(ch == 'A')
+   	a_grade++;
+   else if(ch == 'B')
+   	b_grade++;
+   else if(ch == 'C')
+   	c_grade++;
+   else if(ch == 'D')
+   	d_grade++;
+   else
+   	f_grade++;
+   ```
+
+   ```
+   switch(ch)
+   {
+   	case 'A':
+   		a_grade++;
+   		break;
+   	case 'B':
+   		b_grade++;
+   		break;
+   	case 'C':
+   		c_grade++;
+   		break;
+   	case 'D':
+   		d_grade++;
+   		break;
+   	default:
+   		f_grade++;
+   		break;
+   }
+
+8. **对于程序清单6.10，与使用数字相比，使用字符（如a和c）表示菜单选项和case标签有何优点呢？（提示：想想用户输入q和输入5的情况）**
+
+   如果使用整数标签，且用户输入了非整数（如q），则程序将因为整数输入不能处理字符而挂起。但是，如果使用字符标签，而用户输入了整数（如5），则字符输入将5作为字符处理。然后，`switch`语句的`default`部分将提示输入另一个字符。
+
+9. **请看下面的代码片段：**
+
+   ```
+   int line = 0;
+   char ch;
+   while(cin.get(ch))
+   {
+   	if(ch == 'Q')
+   		break;
+   	if(ch != '\n')
+   		continue;
+   	iine++;
+   }
+   ```
+
+   **请重写该代码片段，不要使用`break`和`continue`语句。**
+
+   ```
+   int line = 0;
+   char ch;
+   while(cin.get(ch) && ch != 'Q')
+   {
+   	if(ch == '\n')
+   		line++;
+   }
+
