@@ -113,3 +113,17 @@ translate << 1, 0, 0, -eye_pos[0],
 ### 运行结果参考
 
 ![image-20220320201343196](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20101/homework/homework_notes/hw1_result.png?raw=true "result")
+
+
+
+## Homework 2
+
+作业2的主要内容是将一个三角形栅格化后显示到窗口上。
+
+首先，将上个作业中对于投影矩阵的实现复制到 main.cpp 下的 get_projection_matrix() 函数中。
+
+在rasterize_triangle()函数中，我们需要将传入的三角形参数t进行光栅化。阅读上面的代码可知，传入的三角形t的三个点的坐标是已经经过MVP矩阵变换且经过齐次除法和屏幕坐标变换的。
+
+c++17 [alpha,beta,gamma]
+
+cross[a,b]
