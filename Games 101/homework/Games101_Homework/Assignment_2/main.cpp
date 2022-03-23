@@ -19,9 +19,9 @@ Eigen::Matrix4f get_view_matrix(Eigen::Vector3f eye_pos)
 
     Eigen::Matrix4f inverse;
     inverse << 1, 0, 0, 0,
-        0, 1, 0, 0,
-        0, 0, -1, 0,
-        0, 0, 0, 1;
+               0, 1, 0, 0,
+               0, 0, -1, 0,
+               0, 0, 0, 1;
 
     view = inverse * translate * view;
 
