@@ -6,6 +6,10 @@
 
 配置的过程中参考了一些文章，贴在下面。
 
+由于课程中的要求，后面的作业只会分析实现的思路，不会给出源代码。
+
+如有不对的地方，欢迎指正。
+
 ### 外部依赖库的配置
 
 Games101作业使用的框架为`eigen3`和`opencv`。在Visual Studio中配置外部依赖库非常麻烦，这里使用了vcpkg来简化流程。
@@ -89,13 +93,13 @@ inverse << 1, 0, 0, 0,
 
 作业的要求是实现绕着z轴的旋转，因此，可以直接应用z轴旋转的矩阵。
 
-![image-20220320191416537](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20101/homework/homework_notes/hw1_model_matrix.png?raw=true "绕Z轴旋转的矩阵公式")
+<img src="https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20101/homework/homework_notes/hw1_model_matrix.png?raw=true" alt="image-20220320191416537" title="绕Z轴旋转的矩阵公式" style="zoom:50%;" />
 
 ### 投影矩阵
 
 首先，我们需要将透视投影矩阵的视锥体范围转换为正交投影矩阵的立方体范围，这在课程中已经有了详细的推导。
 
-![image-20220320195727394](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20101/homework/homework_notes/hw1_proj_matrix_1.png?raw=true "pers-ortho matrix")
+<img src="https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20101/homework/homework_notes/hw1_proj_matrix_1.png?raw=true" alt="image-20220320195727394" title="pers-ortho matrix" style="zoom:50%;" />
 
 其中第三行的内容为`(0, 0, n+f, -nf)`。
 
@@ -103,15 +107,15 @@ inverse << 1, 0, 0, 0,
 
 先将立方体的中心移动到原点，课程给出了矩阵：
 
-![image-20220320200542929](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20101/homework/homework_notes/hw1_proj_matrix_2.png?raw=true "ortho-trans matrix")
+<img src="https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20101/homework/homework_notes/hw1_proj_matrix_2.png?raw=true" alt="image-20220320200542929" title="ortho-trans matrix" style="zoom:50%;" />
 
 由于摄像机本身在原点，所以X轴和Y轴的偏移其实是可以省略的。
 
 然后，将立方体的取值范围缩放到[-1,1]：
 
-![image-20220320201051061](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20101/homework/homework_notes/hw1_proj_matrix_3.png?raw=true "ortho-scale matrix")
+<img src="https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20101/homework/homework_notes/hw1_proj_matrix_3.png?raw=true" alt="image-20220320201051061" title="ortho-scale matrix" style="zoom:50%;" />
 
-上面是PPT中的缩放矩阵，PPT中的`n`和`f`都在-Z轴上，所以`n-f`大于0。由于我上面的操作，将`zNear`和`zFar`都变成正数，所以这里需要使用`f-n`，否则就会导致Z轴反转（在这个作业中不会有问题，视觉效果是一样的，但在下一个深度测试的作业中，三角形的遮挡关系就会出错）
+上面是PPT中的缩放矩阵，PPT中的`n`和`f`都在-Z轴上，所以`n-f`大于0。由于我上面的操作，将`zNear`和`zFar`都变成正数，所以这里需要使用`f-n`，否则就会导致Z轴反转（此处不修改的话在这个作业中不会有问题，由于三角形是对称的，所以视觉效果是一样的，但在下一个深度测试的作业中，三角形的遮挡关系就会出错）
 
 最后，将上述3个矩阵进行组合，就构成了投影矩阵。
 
@@ -125,10 +129,43 @@ inverse << 1, 0, 0, 0,
 
 作业2的主要内容是将一个三角形栅格化后显示到窗口上。
 
-首先，将上个作业中对于投影矩阵的实现复制到 main.cpp 下的 get_projection_matrix() 函数中。
+首先，需要将上个作业中对于投影矩阵的实现复制到 main.cpp 对应的函数中。
 
-在rasterize_triangle()函数中，我们需要将传入的三角形参数t进行光栅化。阅读上面的代码可知，传入的三角形t的三个点的坐标是已经经过MVP矩阵变换且经过齐次除法和屏幕坐标变换的。
+在`rasterize_triangle()`函数中，我们需要将传入的三角形参数`t`进行光栅化。阅读上面的代码可知，传入的三角形t的三个点的坐标是已经经过MVP矩阵变换且经过齐次除法和屏幕坐标变换的（后面计算插值的深度值时又做了一次齐次除法，但此时`w`值已经是1了，个人感觉多此一举了）。
+
+### 光栅化
+
+首先，我们根据三角形的3个顶点计算出2维的包围盒来减少遍历的像素数量。
+
+注意：
+
+* 只需要计算2维，也就是x和y的最大值和最小值，因为我们遍历的像素是2维的。
+* 在计算出最大值和最小值时，不能直接使用，而是使用`floor()`函数计算像素的索引值
+
+<img src="https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20101/homework/homework_notes/hw2_aabb.png?raw=true" title="bouding box" style="zoom:50%;" />
+
+然后遍历上面计算的包围盒，对每一个像素索引，计算像素的中心坐标，使用中心坐标去判断该像素是否位于三角形的内部。
+
+中心坐标的示意图：
+
+<img src="https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20101/homework/homework_notes/hw2_center_point.png?raw=true" alt="image-20220324030650798" title="center point" style="zoom:50%;" />
+
+关于如何判断像素是否在三角形的内部，Lecture_06给出了一个方法，就是使用叉乘来判断该像素是否位于三角形的三条边的同一侧（左边或是右边）。我们需要在函数`insideTriangle(float x, float y, const Vector3f* _v)`中进行实现。
+
+注意：
+
+* 测试了一下，发现Eigen库中好像只支持3维向量的叉乘。为了保证叉乘结果的准确性，需要手动将每个向量的第3维置为0（相当于放在了3维空间的同一个平面上）
+  * 这样计算出来的结果，有2维肯定是0
+  * 我们只需要关注非0的那一个结果
+    * 它的值即为向量中4个非0值组成的行列式的值
+    * 这个值是有方向的，也就是说，它可能是正的，也可能是负的
+    * 当像素对三角形的三条边所形成的的向量进行叉乘，得到的结果的方向相同时（即同为正或负），说明该像素在三角形的内部
+* 三角形三个向量以及像素与三角形顶点的向量必须按照一定顺序进行声明，如AB、BC、CA（而不是AB、BC、AC）
+
+<img src="https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20101/homework/homework_notes/hw2_cross_test.png?raw=true" title="叉乘判断法" style="zoom: 50%;" />
+
+### 深度测试
+
+确定了该像素在三角形内部之后，我们就需要知道三角形在该点的深度值。得到深度值之后，将深度值与当前深度缓冲中的深度值进行比较，若发现当前的深度值小于缓冲中的深度值，则表示当前三角形内部的该像素点在最前面。因此，需要将该点的颜色设置为该三角形的颜色。
 
 c++17 [alpha,beta,gamma]
-
-cross[a,b]
