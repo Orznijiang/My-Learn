@@ -203,10 +203,14 @@ inverse << 1, 0, 0, 0,
 
 ### 运行结果参考
 
-<img src="E:\Backup Folder\LiHaoyu\github\MyImageBed\My-Learn\Games 101\homework\homework_notes\hw2_result.png" alt="image-20220324185013221" title="hw2_result"  />
+![image-20220324194759716](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20101/homework/homework_notes/hw2_result.png?raw=true "result")
 
 ### 提高项实现思路
 
-由于本人比较懒，没有写提高项，在这里就写写实现的思路。并且我上面运行的结果并没有出现不正常的黑边，也就感觉没有必要去解决了（笑）
+本人比较懒，没有写提高项，在这里就写写实现的思路。并且我上面运行的结果并没有出现不正常的黑边，也就感觉没有必要去解决了（笑）
 
-由于需要进行2x2的采样
+* 由于需要进行2x2的采样，我们要额外创建原来4倍大小的buffer（包括color和depth）
+* 在遍历像素索引时，不再使用像素中心坐标，而是使用将像素分成4个子像素后的中心坐标，即`(x + 0.25, y + 0.25)`、`(x + 0.25, y + 0.75)`、`(x + 0.75, y + 0.25)`、`(x + 0.75, y + 0.75)`
+* 对于每一个采样点，若处于三角形内部且插值后的深度值小于深度缓冲中的深度，就更新颜色缓冲中的信息
+* 完成遍历（所有三角形）后，对2x2的采样结果进行平均，放到原来的颜色缓冲中，得到最终的结果
+
