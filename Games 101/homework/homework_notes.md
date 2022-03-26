@@ -214,3 +214,8 @@ inverse << 1, 0, 0, 0,
 * 对于每一个采样点，若处于三角形内部且插值后的深度值小于深度缓冲中的深度，就更新颜色缓冲中的信息
 * 完成遍历（所有三角形）后，对2x2的采样结果进行平均，放到原来的颜色缓冲中，得到最终的结果
 
+### 参考链接
+
+* https://blog.csdn.net/weixin_35968185/article/details/112720041
+* https://blog.csdn.net/wangjiangrong/article/details/115326930
+* https://blog.csdn.net/wangjiangrong/article/details/107770259
