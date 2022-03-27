@@ -84,6 +84,7 @@ void rst::rasterizer::draw(pos_buf_id pos_buffer, ind_buf_id ind_buffer, col_buf
         //Homogeneous division
         for (auto& vec : v) {
             vec /= vec.w();
+            //std::cout << vec.x() << ", " << vec.y() << ", " << vec.z() << ", " << vec.w() << std::endl;
         }
         //Viewport transformation
         for (auto & vert : v)

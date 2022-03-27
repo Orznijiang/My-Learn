@@ -170,11 +170,22 @@ inverse << 1, 0, 0, 0,
 
 三角形的3个顶点的深度值（即z值）是已知的，我们需要通过插值来得到该点的深度值（实际上，由于两个给定的三角形都平行于XY平面，Z值在三角形上完全相等，不需要插值也能完成，但是计算插值深度是更通用的步骤）
 
-课程中涉及三角形插值方面的内容在Lecture_09，而作业2在前面几讲就放出来了。下面会给出一个这方面内容的介绍链接，或者可以选择看完Lecture_09再完成作业2。考虑到这方面内容的暂时性缺失，作业2给的代码中已经给出了这方面的实现，不需要自己去写。但是给出的源码个人感觉还有可以优化的地方：
+课程中涉及三角形插值方面的内容在Lecture_09，而作业2在前面几讲就放出来了。下面会给出一些这方面内容的介绍链接，或者可以选择看完Lecture_09再完成作业2。考虑到这方面内容的暂时性缺失，作业2给的代码中已经给出了这方面的实现，不需要自己去写。但是给出的源码个人感觉还有可以优化的地方：
 
 * 在光栅化之前，已经对三角形的3个顶点进行了齐次除法，顶点的`w`项已经为1，这里再除以1没有任何意义，可以直接删除
 * 三角形重心坐标的三项`alpha,beta,gamma`之和必为1。因此算法中的`w_reciprocal`项存在与否也是无所谓的
-* 因此，插值的深度值只是简单的3个点的z值与对应的重心坐标的加权和，即：`float z_interpolated = alpha * v[0].z() + beta * v[1].z() + gamma * v[2].z();`
+* 因此，插值的深度值只是屏幕空间下的3个点的z值与对应的重心坐标的加权和，即：`float z_interpolated = alpha * v[0].z() + beta * v[1].z() + gamma * v[2].z();`
+  * 在这个作业中，这样的结果是恰好正确的，因为三角形都平行于XY平面，z值完全相同，所以投影后重心坐标不发生改变
+
+  * 然而，在透视投影变换中，当三角形顶点的z值不完全相同时，其上某一点的重心坐标与投影后的三角形的对应点的重心坐标不一定相同，导致上面这个加权和插值出的深度与这个点真正的深度不一致（具体的原因也可以参考下面的链接）
+
+  * 在实际的应用中，我们不应该直接使用上面屏幕空间下计算出来的插值结果，而是要将这个插值结果进行校正，得到真正的在三维空间下的准确的插值结果，下面给出公式，推导过程可看下面的参考链接
+
+    ![image-20220327172612606](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20101/homework/homework_notes/hw2_recorrect1.png?raw=true "correction1")
+
+    ![image-20220327172724270](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20101/homework/homework_notes/hw2_recorrect2.png?raw=true "recorrection2")
+
+  * 同时，在进行真正的深度测试时也不会使用线性的深度值，而是希望近处的深度值拥有更大的精度。所以，顶点的深度值会经过一定的处理，但是插值还是线性的。
 
 注意：
 
@@ -219,3 +230,7 @@ inverse << 1, 0, 0, 0,
 * https://blog.csdn.net/weixin_35968185/article/details/112720041
 * https://blog.csdn.net/wangjiangrong/article/details/115326930
 * https://blog.csdn.net/wangjiangrong/article/details/107770259
+* https://zhuanlan.zhihu.com/p/400257532
+* https://www.cnblogs.com/mikewolf2002/archive/2012/11/25/2787480.html
+* https://zhuanlan.zhihu.com/p/380589244
+* https://blog.csdn.net/qq_18998145/article/details/117222382
