@@ -587,11 +587,181 @@
 
 ## 第7章 函数——C++的编程模块
 
-1. 使用函数的3个步骤是什么？
-2. 请创建与下面的函数匹配的函数原型。
-   1. `igor()`没有参数，且没有返回值。
-   2. `tofu()`接受一个`int`参数，并返回一个`float`。
-   3. `mpg()`接受两个`double`参数，并返回一个`double`。
-   4. `summation()`将`long`数组名和数组长度作为参数，并返回一个`long`值。
-   5. `doctor()`接受一个字符串参数（不能修改该字符串），并返回一个`double`值。
-   6. 
+1. **使用函数的3个步骤是什么？**
+
+   这3个步骤是定义函数、提供原型、调用函数。
+
+2. **请创建与下面的函数匹配的函数原型。**
+
+   1. **`igor()`没有参数，且没有返回值。**
+
+      `void igor();`
+
+   2. **`tofu()`接受一个`int`参数，并返回一个`float`。**
+
+      `float tofu(int);`
+
+   3. **`mpg()`接受两个`double`参数，并返回一个`double`。**
+
+      `double mpg(double, double);`
+
+   4. **`summation()`将`long`数组名和数组长度作为参数，并返回一个`long`值。**
+
+      `long summation(long [], int);`
+
+   5. **`doctor()`接受一个字符串参数（不能修改该字符串），并返回一个`double`值。**
+
+      `double doctor(const char *);`
+
+   6. **`ofcourse()`将`boss`结构作为参数，不返回值。**
+
+      `void ofcourse(boss);`
+
+   7. **`plot()`将`map`结构的指针作为参数，并返回一个字符串。**
+
+      `char * plot(map *);`
+
+3. **编写一个接受3个参数的函数：`int`数组名，数组长度和一个`int`值，并将数组中的所有元素都设置为该`int`值。**
+
+   ```
+   void set_array(int arr[], int size, int value)
+   {
+   	for(int i = 0;i < size; i++)
+   		arr[i] = value;
+   }
+
+4. **编写一个接受3个参数的函数：指向数组区间中第一个元素的指针、指向数组区间中最后一个元素后面的指针以及一个`int`值，并将数组中的每个元素都设置为该`int`值。**
+
+   ```
+   void set_array(int * begin, int * end, int value)
+   {
+   	for(int * pt = begin;pt != end;pt++)
+   		*pt = value;
+   }
+
+5. **编写将`double`数组名和数组长度作为参数，并返回该数组中最大值的函数。该函数不应修改数组的内容。**
+
+   ```
+   double biggest(const double foot[], int size)
+   {
+   	double max;
+   	if(size < 1)
+   	{
+   		cout << "Invalid Array size of " << size << endl;
+   		cout << "Returning a value of 0\n";
+   		return 0;
+   	}
+   	else
+   	{
+   		max = foot[0];
+   		for(int i = 1;i < size;i++)
+   		{
+   			if(foot[i] > max)
+   				max = foot[i];
+   		}
+   		return max;
+   	}
+   }
+
+6. **为什么不对类型为基本类型的函数参数使用`const`限定符？**
+
+   将`const`限定符用于指针，以防止指向的原始数据被修改。程序传递基本类型（如`int`或`double`）时，它将按值传递，以便函数使用副本。这样，原始数据将得到保护。
+
+7. **C++程序可使用哪3种C-风格字符串格式？**
+
+   1. 存储在char数组中
+   2. 用带双引号的字符串来表示
+   3. 用指向字符串第一个字符的指针来表示
+
+8. **编写一个函数，其原型如下：**
+
+   ```
+   int replace(char * str, char c1, char c2);
+   ```
+
+   **该函数将字符串中所有的`c1`都替换为`c2`，并返回替换次数。**
+
+   ```
+   int replace(char * str, char c1, char c2)
+   {
+   	int count = 0;
+   	while(*str)
+   	{
+   		if(*str == c1)
+   		{
+   			*str = c2;
+   			count++;
+   		}
+   		str++;
+   	}
+   	return count;
+   }
+
+9. **表达式`*"pizza"`的含义是什么？`"taco"[2]`呢？**
+
+   * `*"pizza"`：C++将`"pizza"`解释为其第一个元素的地址，因此使用`*`运算符将得到第一个元素的值，即字符`p`。
+   * `"taco"[2]`：C++将`"taco"`解释为其第一个元素的地址，因此它将`"taco"[2]`解释为第二个元素的值，即字符`c`。
+
+   换句话来说，字符串常量的行为与数组名相同。
+
+10. **C++允许按值传递结构，也允许传递结构的地址。如果`glitz`是一个结构变量，如何按值传递它？如何传递它的地址？这两种方法有何利弊？**
+
+    * 按值传递：传递结构名`glitz`即可。
+    * 传递地址：使用地址运算符`&glitz`。
+    * 按值传递将自动保护原始数据，但这是以时间和内存为代价的。按地址传递可以节省时间和内存，但不能保护原始数据，除非对函数参数使用了`const`限定符。另外，按值传递意味着可以使用常规的结构成员表示法，但传递指针则必须使用间接成员运算符。
+
+11. **函数`judge()`的返回类型为`int`，它将这样一个函数的地址作为参数：将`const char`指针作为参数，并返回一个`int`值。请编写`judge()`函数的原型。**
+
+    ```
+    int judge(int (*pf)(const char *));
+
+12. **假设有如下结构声明：**
+
+    ```
+    struct applicant{
+    	char name[30];
+    	int credit_ratings[3];
+    };
+    ```
+
+    1. **编写一个函数，它将`application`结构作为参数，并显示该结构的内容。**
+
+       ```
+       void display(applicant ap)
+       {
+       	cout << ap.name << endl;
+       	for(int i = 0;i < 3;i++)
+       	{
+       		cout << ap.credit_ratings[i] << endl;
+       	}
+       }
+
+    2. **编写一个函数，它将`application`结构的地址作为参数，并显示该参数指向的结构的内容。**
+
+       ```
+       void display(applicant * ap)
+       {
+       	cout << ap->name <<endl;
+       	for(int i = 0;i < 3;i++)
+       	{
+       		cout << ap->credit_ratings[i] << endl;
+       	}
+       }
+
+13. **假设函数`f1()`和`f2()`的原型如下：**
+
+    ```
+    void f1(applicant * a);
+    const char * f2(const applicant * a1, const applicant * a2);
+    ```
+
+    **请将`p1`和`p2`分别声明为指向`f1`和`f2`的指针；将`ap`声明为一个数组，它包含5个类型与`p1`相同的指针；将`pa`声明为一个指针，它指向的数组包含10个类型与`p2`相同的指针。使用`typedef`来帮助完成这项工作。**
+
+    ```
+    typedef void(*p_f1)(applicant *);
+    typedef const char * (p_f2)(const applicant *, const char *);
+    p_f1 p1 = f1;
+    p_f2 p2 = f2;
+    p_f1 ap[5];
+    p_f2 (*pa)[10];
+
