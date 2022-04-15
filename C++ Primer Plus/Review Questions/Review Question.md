@@ -765,3 +765,25 @@
     p_f1 ap[5];
     p_f2 (*pa)[10];
 
+### 编程练习注意点
+
+* 下面的函数，当输入数字以外的字符时，会终止输入，返回一共输入的数字数量。且`if`中的`cin`始终会被运行到。
+
+  ```
+  int Fill_array(double* arr, int size) {
+  	for (int i = 0; i < size; i++) {
+  		cout << "number " << i << " : ";
+  		if (!(cin >> arr[i])) {
+  			cin.clear();
+  			while (cin.get() != '\n') {
+  				continue;
+  			}
+  			return i;
+  		}
+  	}
+  	return size;
+  ```
+
+  * `clear()`函数清除`cin`发出的错误报告。
+  * `while`循环清除输入缓冲中的所有输入，使得后面可以重新进行输入。
+
