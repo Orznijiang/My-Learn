@@ -12,7 +12,7 @@ struct Expense {
 void fill(Expense*, int);
 void show(Expense*, int);
 
-int main() {
+int main08b() {
 	Expense expenses;
 	fill(&expenses, Seasons);
 	show(&expenses, Seasons);
