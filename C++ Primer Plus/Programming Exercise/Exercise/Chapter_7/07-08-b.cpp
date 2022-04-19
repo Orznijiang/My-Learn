@@ -3,7 +3,7 @@
 using namespace std;
 
 const int Seasons{ 4 };
-const char* Snamess[Seasons]{ "Spring", "Summer", "Fall", "Winter" };
+const char* const Snames[Seasons]{ "Spring", "Summer", "Fall", "Winter" };
 
 struct Expense {
 	double expenses[Seasons];
@@ -22,7 +22,7 @@ int main08b() {
 
 void fill(Expense* p, int size) {
 	for (int i = 0; i < size; i++) {
-		cout << "Enter " << Snamess[i] << " expenses : ";
+		cout << "Enter " << Snames[i] << " expenses : ";
 		cin >> (*p).expenses[i];
 	}
 }
@@ -31,7 +31,7 @@ void show(Expense* p, int size) {
 	double total = 0.0;
 	cout << "\nEXPENSES\n";
 	for (int i = 0; i < size; i++) {
-		cout << Snamess[i] << " : $" << (*p).expenses[i] << endl;
+		cout << Snames[i] << " : $" << (*p).expenses[i] << endl;
 		total += (*p).expenses[i];
 	}
 	cout << "Total Expenses : $" << total << endl;

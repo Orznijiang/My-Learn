@@ -3,7 +3,7 @@
 using namespace std;
 
 const int Seasons{ 4 };
-const char* Snames[Seasons]{ "Spring", "Summer", "Fall", "Winter" };
+const char* const Snames[Seasons]{ "Spring", "Summer", "Fall", "Winter" };
 
 void fill(double*, int);
 void show(double*, int);
