@@ -8,7 +8,7 @@ double mul(double, double);
 double div(double, double);
 double calculate(double, double, double (*)(double, double));
 
-int main() {
+int main10() {
 	// [] > *
 	double (*pf[4])(double, double) = { add, sub, mul, div };
 	int first{}, second{};
