@@ -787,3 +787,206 @@
   * `clear()`函数清除`cin`发出的错误报告。
   * `while`循环清除输入缓冲中的所有输入，使得后面可以重新进行输入。
 
+
+
+## 第8章 函数探幽
+
+1. **哪种函数适合定义为内联函数？**
+
+   只有一行代码的小型、非递归函数适合作为内联函数。
+
+2. **假设`song()`函数的原型如下：**
+
+   ```
+   void song(const char * name, int times);
+   ```
+
+   1. **如何修改原型，使`times`的默认值为1？**
+
+      `void song(const char * name, int times = 1);`
+
+   2. **函数定义需要做哪些修改？**
+
+      没有。只有原型包含默认值的信息。
+
+   3. **能否为`name`提供默认值`"O. My Papa"`?**
+
+      是的，如果保留`times`的默认值：
+
+      ```
+      void song(const char * name = "O. My Papa", int times = 1);
+
+3. **编写`iquote()`的重载版本——显示其用双引号括起的参数。编写3个版本：一个用于`int`参数，一个用于`double`参数，一个用于`string`参数。**
+
+   可以使用字符串`"\""`或字符`'"'`来打印引号，下面的函数演示了这两种方法。
+
+   ```
+   #include <iostream>
+   #include <string>
+   
+   using namespace std;
+   
+   void iquote(int n)
+   {
+   	cout << "\"" << n << "\"" << endl;
+   }
+   
+   void iquote(double x)
+   {
+   	cout << '"' << x << '"' << endl;
+   }
+   
+   void iquote(string str)
+   {
+   	cout << "\"" << str << "\"" << endl;
+   }
+
+4. **下面是一个结构模板：**
+
+   ```
+   struct box
+   {
+   	char maker[40];
+   	float height;
+   	float width;
+   	float length;
+   	float volume;
+   };
+   ```
+
+   1. **请编写一个函数，它将box结构的引用作为形参，并显示每个成员的值。**
+
+      ```
+      void show_box(const box & container)
+      {
+      	cout << "Made by " << container.maker << endl;
+      	cout << "Height = " << container.height << endl;
+      	cout << "Width = " << container.width << endl;
+      	cout << "Volune = " << container.volume << endl;
+      }
+
+   2. **请编写一个函数，它将box结构的引用作为形参，并将volume成员设置为其他三边的乘积。**
+
+      ```
+      void set_box(box & crate)
+      {
+      	crate.volume = crate.height * crate.width * crate.length;
+      }
+
+5. **为让函数`fill()`和`show()`使用引用参数，需要对程序清单7.15做哪些修改？**
+
+   首先，将原型修改成下面这样：
+
+   ```
+   // function to modify array object
+   void fill(std::array<double, Seasons> & pa);
+   // function that uses array object without modifying it
+   void show(const std::array<double, Season> & da);
+   ```
+
+   注意，`show()`应使用`const`，以禁止修改对象。
+
+   接下来，在`main()`中，将`fill()`调用改为下面这样：
+
+   ```
+   fill(expenses);
+   ```
+
+   函数`show()`的调用不需要修改。
+
+   接下来，新的`fill()`应类似于下面这样：
+
+   ```
+   void fill(std::array<double, Season> & pa)
+   {
+   	using namespace std;
+   	for(int i = 0;i < Season;i++){
+   		cout << "Enter " << Snames[i] << " expenses: ";
+   		cin >> pa[i]; // changed
+   	}
+   }
+   ```
+
+   注意到`(*pa)[i]`变成了更简单的`pa[i]`。
+
+   最后，修改`show()`的函数头：
+
+   ```
+   void show(std::array<double, Season> & da)
+
+6. **指出下面每个目标是否可以使用默认参数或函数重载完成，或者这两种方法都无法完成，并提供合适的原型。**
+
+   1. **`mass(density, volume)`返回密度为`density`、体积为`volume`的物体的质量，而`mass(density)`返回密度为`density`体积为1.0立方米的物体的质量。这些值的类型都为`double`。**
+
+      通过为第二个参数提供默认值：
+
+      ```
+      double mass(double density, double volume = 1.0);
+      ```
+
+      也可以通过函数重载：
+
+      ```
+      double mass(double density, double volume);
+      double mass(double density);
+
+   2. **`reapeat(10, "I'm OK")`将指定的字符串显示10次，而`reapeat("But you're kind of stupid")`将指定的字符串显示5次。**
+
+      不能为重复的值使用默认值，因为必须从右到左提供默认值。可以使用重载：
+
+      ```
+      void repeat(int times, const char * str);
+      void repeat(const char * str);
+      ```
+
+   3. **`average(3, 6)`返回两个`int`参数的平均值（`int`类型），而`average(3.0, 6.0)`返回两个`double`值的平均值（`double`类型）。**
+
+      可以使用函数重载：
+
+      ```
+      int average(int a, int b);
+      double average(double x, double y);
+
+   4. **`mangle("I'm glad to meet you")`根据是将值赋给`char`变量还是`char *`变量，分别返回字符`l`和指向字符串`"I'm mad to gleet you"`的指针。**
+
+      不能这样做，因为两个版本的特征标将相同。
+
+7. **编写返回两个参数中较大值的函数模板。**
+
+   ```
+   templete <typename T>
+   T max(T t1, T t2){
+   	return t1 > t2 ? t1 : t2;
+   }
+
+8. **给定复习题7的模板和复习题4的`box`结构，提供一个模板具体化，它接受两个`box`参数，并返回体积较大的一个。**
+
+   ```
+   templete <> box max(box b1, box b2){
+   	return b1.volume > b2.volume ? b1 : b2;
+   }
+
+9. **在下述代码（假定这些代码是一个完整程序的一部分）中，`v1`、`v2`、`v3`、`v4`和`v5`分别是哪种类型？**
+
+   ```
+   int g(int x);
+   ...
+   float m = 5.5f;
+   float & rm = m;
+   decltype(m) v1 = m;
+   decltype(rm) v2 = m;
+   decltype((m)) v3 = m;
+   decltype(g(100)) v4;
+   decltype(2.0 * m) v5;
+   ```
+
+   * `v1 : float`
+   * `v2 : float &`
+   * `v3 : float &`
+   * `v4 : int`
+   * `v5 : double`
+
+
+
+## 第9章 内存模型和名称空间
+
