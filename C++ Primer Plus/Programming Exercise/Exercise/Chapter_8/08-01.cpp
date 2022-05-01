@@ -4,7 +4,7 @@ using namespace std;
 
 void print_str(const char*, int n = 0);
 
-int main() {
+int main01() {
 	const char* str = "hello";
 	print_str(str);
 	cout << endl;
