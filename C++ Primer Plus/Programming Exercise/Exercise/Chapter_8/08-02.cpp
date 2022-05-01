@@ -14,7 +14,7 @@ struct CandyBar
 void set_candyBar(CandyBar&, const char* name = "Millennium", double weight = 2.85, int heat = 350);
 void show_candyBar(const CandyBar&);
 
-int main() {
+int main02() {
 	CandyBar bar1;
 	set_candyBar(bar1);
 	CandyBar bar2;
