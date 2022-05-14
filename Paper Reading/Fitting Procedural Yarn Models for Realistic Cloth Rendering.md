@@ -30,13 +30,13 @@
 
 由于纤维级别的细节会很大程度上影响织物的整体外观，因此准确捕捉它们对于前瞻预览的应用（即得到成品前的设计应用，如纺织品设计）至关重要。以前，这些详细的结构是通过体积成像（例如计算机显微断层扫描）测量的，从而生成高分辨率的3D体积<sup>[20] [21]</sup>或大量无组织的纤维曲线<sup>[9]</sup>。这两种表示都不容易操作。另一方面，基于纱线的模型<sup>[1] [7]</sup>更适合编辑和模拟<sup>[19]</sup>，但没有捕捉到实现真实感所需的具有丰富细节的纤维级结构。参见图 1-c，其中纱线（yarn）像是由塑料制成的，因为它们错过了许多纤维级结构产生的细节高光。将便利性和易于建模的特性与复杂外观的特性结合衔接起来，对于采用细节丰富的织物模型至关重要。
 
-![Figure 1](E:\My Documents\Github\MyImageBed\Paper-Reading\Rendering\Fabric\Figure 1.png "图 1")
+![Figure 1](https://github.com/Orznijiang/MyImageBed/blob/main/Paper-Reading/Rendering/Fabric/Fitting%20Procedural%20Yarn%20Models%20for%20Realistic%20Cloth%20Rendering/Figure%201.png?raw=true "图 1")
 
 这篇文章介绍了一种自动化建模过程，该过程进行物理 CT 测量（图 1-a）并计算织物纱线的程序化描述（图1-b）。 其输出可用于将逼真的纤维级细节填充到基于纱线的模型中（图 1-c，中间），显着提高了最终输出的真实性。 此外，这种参数化模型易于编辑，并产生与纱线在真实世界中的表现相匹配的显著的外观变化（图1-c，底部）。
 
 织物的微观几何形状已经在纺织品相关的研究（n）中得到了广泛研究（v）。最近， Schroder等人<sup>[14]</sup>利用该领域的最新成果，将程序化的纱线模型引入了计算机图形学<sup>[8] [10] [16]</sup>。他们的模型以基于易于编辑的统计分布来表示织物纱线。然而，如何为这个模型设置参数值以紧密匹配真实的织物仍然是一个重大的挑战。在 Schroder 等人的成果中<sup>[14]</sup>，创建程序化纱线是一个手动过程。 但这种拟合是一个trick。 如图 2 所示，从扭曲度到毛发量的纤维相关属性的改变会极大地影响织物的整体外观。 因此，妥当地拟合这些参数对于正确再现现实世界的织物的视觉特征至关重要。 但这很难手动完成，因为纤维级结构太小以致无法观察，并且适当地设置相应的参数需要对 3D 微观几何形状进行仔细分析，而这些几何形状在没有体积测量的情况下很难获得。
 
-![Figure 2](E:\My Documents\Github\MyImageBed\Paper-Reading\Rendering\Fabric\Figure 2.png "图 2")
+![Figure 2](https://github.com/Orznijiang/MyImageBed/blob/main/Paper-Reading/Rendering/Fabric/Fitting%20Procedural%20Yarn%20Models%20for%20Realistic%20Cloth%20Rendering/Figure%202.png?raw=true "图 2")
 
 图 2：具有相同的纱线级别几何形状但是纤维级别属性不同的渲染织物：
 
@@ -65,7 +65,7 @@
 
 几十年来，织物外观一直是计算机图形学中的一个活跃研究课题。 传统上，将织物看作无限薄的二维面。 许多表面反射模型已经被提出用来模拟织物外观<sup>[4] [13]</sup>。 尽管这些模型为从远处观看的织物提供了高质量的渲染，但它们缺乏精确再现粗纱或模糊轮廓的织物外观的能力，也缺乏处理外观差异很大的不同织物的通用性。
 
-![Figure 3](E:\My Documents\Github\MyImageBed\Paper-Reading\Rendering\Fabric\Figure 3.png "图 3")
+![Figure 3](https://github.com/Orznijiang/MyImageBed/blob/main/Paper-Reading/Rendering/Fabric/Fitting%20Procedural%20Yarn%20Models%20for%20Realistic%20Cloth%20Rendering/Figure%203.png?raw=true "图 3")
 
 图 3：织物结构：一根纱线（yarn）通常由多个称为股（ply）的子股（sub-stands）组成。 每股（ply）依次包含数十到数百微米直径的纤维（fiber）。
 
@@ -224,13 +224,13 @@ $$
 
 在本节的其余部分，作者首先描述他们利用最先进技术的 CT 成像过程阶段^[9][21]^为我们的主要拟合管线（§4.1）获得简洁的输入几何数据。 然后，我们按照算法 1 的流程解释我们的管线（即 图 4 中从右到左）。
 
-<img src="E:\My Documents\Github\MyImageBed\Paper-Reading\Rendering\Fabric\Figure 4.png" alt="Figure 4" title="Figure 4" style="zoom:50%;" />
+<img src="https://github.com/Orznijiang/MyImageBed/blob/main/Paper-Reading/Rendering/Fabric/Fitting%20Procedural%20Yarn%20Models%20for%20Realistic%20Cloth%20Rendering/Figure%204.png?raw=true" style="zoom:50%;" />
 
 图 4：**作者引入的参数拟合管线。** 该管线与程序化纱线生成算法（算法 1）的顺序大致相反，因为它对参数进行拟合。
 
 ------
 
-<img src="E:\My Documents\Github\MyImageBed\Paper-Reading\Rendering\Fabric\Table 1.png" alt="Table 1" title="Table 1" style="zoom: 67%;" />
+<img src="https://github.com/Orznijiang/MyImageBed/blob/main/Paper-Reading/Rendering/Fabric/Fitting%20Procedural%20Yarn%20Models%20for%20Realistic%20Cloth%20Rendering/Table%201.png?raw=true" title="Table 1" style="zoom: 67%;" />
 
 表 1：程序化纱线模型使用的**参数列表**。 紫色显示的参数是相对于股（ply）的属性。 以蓝色显示的那些参数是为每根纤维通过独立采样相应的统计分布来指定的。 特别是，逐纤维的飞散参数（即 $R^{loop}_{max},\ R^{hair}_{min},\ R^{hair}_{span}\ and\ θ^{hair}_{span}$）是从正态分布中采样的（参见 §5 和表 2），而其他参数（即 $R_i,\ θ_i\ and\ θ^{(0)}_i$ ) 被均匀绘制（§3.2）。
 
@@ -257,7 +257,7 @@ $$
 $$
 其中 K 是股的总数，$S_i$ 由公式（4）给出，$S_i^{tracked}$ 是第 $i$ 个输入的股的中心（图 5-d），其两个端点分别是 z0 和 z1。
 
-![Figure 5](E:\My Documents\Github\MyImageBed\Paper-Reading\Rendering\Fabric\Figure 5.png "Figure 5")
+![Figure 5](https://github.com/Orznijiang/MyImageBed/blob/main/Paper-Reading/Rendering/Fabric/Fitting%20Procedural%20Yarn%20Models%20for%20Realistic%20Cloth%20Rendering/Figure%205.png?raw=true "Figure 5")
 
 **图 5：纱线几何形状的采集。** 
 
