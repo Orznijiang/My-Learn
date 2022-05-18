@@ -291,7 +291,7 @@ $$
 
 除了股捻度和横截面参数外，我们估计每股的纤维数量为 $m=\lfloor L_{total}/L_{ply}K\rfloor$，其中 $L_{total}$ 表示测量几何形状中纤维的总长度（图 5-c），$L_{ply}$ 表示拟合层中心的长度（所有 $S_i$ 曲线具有相同的长度），K 是股数。
 
-![Figure 6](E:\Backup Folder\LiHaoyu\github\MyImageBed\Paper-Reading\Rendering\Fabric\Fitting Procedural Yarn Models for Realistic Cloth Rendering\Figure 6.png "图 6")
+![Figure 6](https://github.com/Orznijiang/MyImageBed/blob/main/Paper-Reading/Rendering/Fabric/Fitting%20Procedural%20Yarn%20Models%20for%20Realistic%20Cloth%20Rendering/Figure%206.png?raw=true "图 6")
 
 **图 6：拟合股横截面（以3股示例）。**
 
@@ -301,7 +301,7 @@ $$
 
 ------
 
-<img src="E:\Backup Folder\LiHaoyu\github\MyImageBed\Paper-Reading\Rendering\Fabric\Fitting Procedural Yarn Models for Realistic Cloth Rendering\Figure 7.png" alt="Figure 7" title="图 7" style="zoom: 80%;" />
+<img src="https://github.com/Orznijiang/MyImageBed/blob/main/Paper-Reading/Rendering/Fabric/Fitting%20Procedural%20Yarn%20Models%20for%20Realistic%20Cloth%20Rendering/Figure%207.png?raw=true" alt="Figure 7" title="图 7" style="zoom: 80%;" />
 
 图 7：拟合股横截面（续）Fitting ply cross-sections (cont’d)。 
 
@@ -325,7 +325,7 @@ d_{max} > \mu_{max}+c_{max}\sigma_{max} \tag{6}
 $$
 的作为飞散纤维（其中 $c_{min}$ 和 $c_{max}$ 是用户指定的常数）。 在实践中，我们使用 $c_{min}=c_{max}=2$ 并对每个（解开的）股分别进行纤维的分类。 图 8 显示了一个分类的示例。
 
-<img src="E:\My Documents\Github\MyImageBed\Paper-Reading\Rendering\Fabric\Fitting Procedural Yarn Models for Realistic Cloth Rendering\Figure 8.png" alt="Figure 8" title="图 8" style="zoom:80%;" />
+<img src="https://github.com/Orznijiang/MyImageBed/blob/main/Paper-Reading/Rendering/Fabric/Fitting%20Procedural%20Yarn%20Models%20for%20Realistic%20Cloth%20Rendering/Figure%208.png?raw=true" alt="Figure 8" title="图 8" style="zoom:80%;" />
 
 **图 8：纤维分类：**
 
@@ -377,7 +377,7 @@ $$
 
 我们的模型将飞散纤维分为两类：环（loop）和毛发（hair）（图 9）。 我们的毛发类型纤维对应于 Voborova 等人^[17]^的前两个飞散纤维类，而我们的环类型纤维对应于他们的第三类纤维。
 
-<img src="E:\My Documents\Github\MyImageBed\Paper-Reading\Rendering\Fabric\Fitting Procedural Yarn Models for Realistic Cloth Rendering\Figure 9.png" alt="Figure 9" title="图 9" style="zoom:80%;" />
+<img src="https://github.com/Orznijiang/MyImageBed/blob/main/Paper-Reading/Rendering/Fabric/Fitting%20Procedural%20Yarn%20Models%20for%20Realistic%20Cloth%20Rendering/Figure%209.png?raw=true" alt="Figure 9" title="图 9" style="zoom:80%;" />
 
 **图 9：我们模型中的两种飞散纤维。**
 
@@ -393,7 +393,7 @@ Schroder等人^[14]^没有明确模拟这些类型的纤维。 相反，他们�
 
 对于每一股，我们使用 $\rho^{loop}$ 来捕获环型纤维的密度。 给定一个以 $Z_0Z_1$ 为中心的解开的股，其中 $Z_0 = (0, 0, z_0) ,\ Z_1 = (0, 0, z_1)$ ，我们重复上述过程以生成 $\lfloor\rho^{loop}(z_1-z_0)\rfloor$ 范围的环型飞散纤维。
 
-![Figure 10](E:\My Documents\Github\MyImageBed\Paper-Reading\Rendering\Fabric\Fitting Procedural Yarn Models for Realistic Cloth Rendering\Figure 10.png "图 10")
+![Figure 10](https://github.com/Orznijiang/MyImageBed/blob/main/Paper-Reading/Rendering/Fabric/Fitting%20Procedural%20Yarn%20Models%20for%20Realistic%20Cloth%20Rendering/Figure%2010.png?raw=true "图 10")
 
 **图 10：环型飞散纤维模型的比较：**
 
@@ -403,7 +403,7 @@ Schroder等人^[14]^没有明确模拟这些类型的纤维。 相反，他们�
 
 ------
 
-![Figure 11](E:\My Documents\Github\MyImageBed\Paper-Reading\Rendering\Fabric\Fitting Procedural Yarn Models for Realistic Cloth Rendering\Figure 11.png "图 11")
+![Figure 11](https://github.com/Orznijiang/MyImageBed/blob/main/Paper-Reading/Rendering/Fabric/Fitting%20Procedural%20Yarn%20Models%20for%20Realistic%20Cloth%20Rendering/Figure%2011.png?raw=true "图 11")
 
 图 11：环型飞散纤维的生成。 
 
@@ -427,7 +427,7 @@ $$
 
 在Schroder 等人的文章中^[14]^，毛发类型纤维是通过随机添加受 3D Perlin 噪声干扰的切线方向的短曲线生成的（图 12-c）。 虽然能够生成类似毛发的纤维，但这种方法过于简单化，使其难以与现实匹配，更重要的是，难以拟合给定的测量纱线的几何形状。 另一方面，我们的模型具有明确的统计意义并且易于拟合（参见 §5.2）。
 
-<img src="E:\My Documents\Github\MyImageBed\Paper-Reading\Rendering\Fabric\Fitting Procedural Yarn Models for Realistic Cloth Rendering\Figure 12.png" alt="Figure 12" title="图 12" style="zoom:80%;" />
+<img src="https://github.com/Orznijiang/MyImageBed/blob/main/Paper-Reading/Rendering/Fabric/Fitting%20Procedural%20Yarn%20Models%20for%20Realistic%20Cloth%20Rendering/Figure%2012.png?raw=true" alt="Figure 12" title="图 12" style="zoom:80%;" />
 
 **图 12：飞散纤维模型（毛发类型）的比较：**
 
@@ -451,7 +451,7 @@ $$
 
 我们的飞散纤维模型做了两个显著的简化。 特别是，我们的环型飞散纤维总是“跨越”一个迁移周期（如图 11 所示），而实际情况通常并非如此。 此外，由于公式（11）我们的毛发类型飞散纤维都具有“弧形”形状，而真正的毛发型纤维通常具有更复杂的轨迹（图 13）。 尽管有这些简化我们还是很好地匹配了纱线的整体外观（见图 15）。 引入它们是为了确保的模型可以从包含有限数量的飞散纤维的测量数据中可靠地拟合（例如，图 5-b）。 未来，随着测量量的增加，可以设计基于更复杂的统计分布的飞散纤维模型。
 
-<img src="E:\My Documents\Github\MyImageBed\Paper-Reading\Rendering\Fabric\Fitting Procedural Yarn Models for Realistic Cloth Rendering\Figure 13.png" alt="Figure 13" title="图 13" style="zoom:80%;" />
+<img src="https://github.com/Orznijiang/MyImageBed/blob/main/Paper-Reading/Rendering/Fabric/Fitting%20Procedural%20Yarn%20Models%20for%20Realistic%20Cloth%20Rendering/Figure%2013.png?raw=true" alt="Figure 13" title="图 13" style="zoom:80%;" />
 
 **图 13：我们的毛发类型飞散纤维模型所做的简化：**
 
@@ -467,7 +467,7 @@ $$
 
 在获得每条解开股的飞散纤维后，我们通过识别每根纤维的环类型和毛发类型部分开始拟合过程。 如图 14-a 所示，一根飞散纤维可以包含两种成分。 因此，对于它们中的每一个，我们首先检查其任何端点的半径（即 $||(x, y)||_2$）是否高于飞散阈值公式 (6) 。 如果是，我们在半径处于局部最小值且低于阈值的顶点处切断纤维的相应端点，并将其添加到毛发型飞散纤维的集合中。 然后将剩余部分（如果有的话）添加到环类型纤维的集合中。 这种纤维分离操作如图 14-b 所示。
 
-<img src="E:\My Documents\Github\MyImageBed\Paper-Reading\Rendering\Fabric\Fitting Procedural Yarn Models for Realistic Cloth Rendering\Figure 14.png" alt="Figure 14" title="图 14" style="zoom:80%;" />
+<img src="https://github.com/Orznijiang/MyImageBed/blob/main/Paper-Reading/Rendering/Fabric/Fitting%20Procedural%20Yarn%20Models%20for%20Realistic%20Cloth%20Rendering/Figure%2014.png?raw=true" alt="Figure 14" title="图 14" style="zoom:80%;" />
 
 **图 14：处理飞散纤维。 **
 
