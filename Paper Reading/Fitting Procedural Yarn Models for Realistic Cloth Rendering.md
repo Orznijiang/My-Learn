@@ -511,7 +511,7 @@ $$
 
 因此，纱线模型的进一步推广和开发相应的拟合技术将是有价值的。 最后，我们的方法可以捕获的几何差异级别受到微型 CT 扫描仪可以采用的最大样本量的限制。 因此，我们的模型中缺少难以测量的大的纱线级别的差异。
 
-![Figure 15](E:\Backup Folder\LiHaoyu\github\MyImageBed\Paper-Reading\Rendering\Fabric\Fitting Procedural Yarn Models for Realistic Cloth Rendering\Figure 15.png "图 15")
+![Figure 15](https://github.com/Orznijiang/MyImageBed/blob/main/Paper-Reading/Rendering/Fabric/Fitting%20Procedural%20Yarn%20Models%20for%20Realistic%20Cloth%20Rendering/Figure%2015.png?raw=true "图 15")
 
 **图 15：参数拟合结果。 **
 
@@ -525,7 +525,7 @@ $$
 
 ------
 
-![Figure 16](E:\Backup Folder\LiHaoyu\github\MyImageBed\Paper-Reading\Rendering\Fabric\Fitting Procedural Yarn Models for Realistic Cloth Rendering\Figure 16.png "图 16")
+![Figure 16](https://github.com/Orznijiang/MyImageBed/blob/main/Paper-Reading/Rendering/Fabric/Fitting%20Procedural%20Yarn%20Models%20for%20Realistic%20Cloth%20Rendering/Figure%2016.png?raw=true "图 16")
 
 **图 16：使用我们的拟合参数程序化生成的长织物纱线。 **
 
@@ -533,7 +533,7 @@ $$
 
 ------
 
-![Figure 17](E:\Backup Folder\LiHaoyu\github\MyImageBed\Paper-Reading\Rendering\Fabric\Fitting Procedural Yarn Models for Realistic Cloth Rendering\Figure 17.png "图 17")
+![Figure 17](https://github.com/Orznijiang/MyImageBed/blob/main/Paper-Reading/Rendering/Fabric/Fitting%20Procedural%20Yarn%20Models%20for%20Realistic%20Cloth%20Rendering/Figure%2017.png?raw=true "图 17")
 
 **图 17：使用我们的方法通过程序化添加的具有纤维级几何形状的完整纺织品。 **
 
@@ -541,7 +541,7 @@ $$
 
 ------
 
-![Table 2](E:\Backup Folder\LiHaoyu\github\MyImageBed\Paper-Reading\Rendering\Fabric\Fitting Procedural Yarn Models for Realistic Cloth Rendering\Table 2.png "表 2")
+![Table 2](https://github.com/Orznijiang/MyImageBed/blob/main/Paper-Reading/Rendering/Fabric/Fitting%20Procedural%20Yarn%20Models%20for%20Realistic%20Cloth%20Rendering/Table%202.png?raw=true "表 2")
 
 **表 2：图 15 中显示的所有结果的拟合参数值。**
 
@@ -549,7 +549,7 @@ $$
 
 ------
 
-![Table 3](E:\Backup Folder\LiHaoyu\github\MyImageBed\Paper-Reading\Rendering\Fabric\Fitting Procedural Yarn Models for Realistic Cloth Rendering\Table 3.png "表 3")
+![Table 3](https://github.com/Orznijiang/MyImageBed/blob/main/Paper-Reading/Rendering/Fabric/Fitting%20Procedural%20Yarn%20Models%20for%20Realistic%20Cloth%20Rendering/Table%203.png?raw=true "表 3")
 
 **表 3：使用 Khungurn 等人^[9]^引入的用于生成图 15 中的所有渲染效果的模型的纤维散射参数。**
 
