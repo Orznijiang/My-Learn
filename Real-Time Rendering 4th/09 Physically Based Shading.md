@@ -69,15 +69,13 @@ $$
 
 ### 9.10.3 微圆柱布料模型
 
-用于布料的微圆柱模型与用于头发的模型非常相似，因此 第 14.7.2 节 中对头发模型的讨论可以提供额外的背景信息。 这些模型背后的想法是假设表面被一维线（one-dimensional lines）所覆盖。 Kajiya 和 Kay 为这个情况 ^[847]^ 开发了一个简单的 BRDF 模型，Banks ^[98]^ 为它提供了坚实的理论基础。 因此它也被称为 Kajiya-Kay BRDF 或 Banks BRDF。 该概念基于以下观察：由一维线组成的表面在任何给定位置具有无限数量的法线，由垂直于**该位置的切向量 $t$ **的法线平面定义。 尽管已经基于这个框架开发了许多更新的微圆柱模型，但由于其简单性，原始的 Kajiya-Kay 模型仍然有一些用途。 例如，在游戏 《神秘海域4》（Uncharted 4）^[825]^ 中，Kajiya-Kay BRDF 被用于光泽织物（如丝绸（silk）和天鹅绒（velvet））的镜面反射项。
+用于布料的微圆柱模型与用于头发的模型非常相似，因此 第 14.7.2 节 中对头发模型的讨论可以提供额外的背景信息。 这些模型背后的想法是假设表面被一维线（one-dimensional lines）所覆盖。 Kajiya 和 Kay 为这个情况 ^[847]^ 开发了一个简单的 BRDF 模型，Banks ^[98]^ 为它提供了坚实的理论基础。 因此它也被称为 Kajiya-Kay BRDF 或 Banks BRDF。 该概念基于以下观察：由一维线组成的表面在任何给定位置具有无限数量的法线，由垂直于**该位置的切向量 $t$ **的法线平面定义。 尽管已经基于这个框架开发了许多更新的微圆柱模型，但由于其简单性，原始的 Kajiya-Kay 模型仍然有一些用途。 例如，在游戏 《神秘海域4》（Uncharted 4）^[825]^ 中，Kajiya-Kay BRDF 被用于光泽织物（如丝绸（silk）和天鹅绒（velvet））的镜面反射（specular）项。
 
+Dreamworks ^[348][1937]^ 使用相对简单且易由艺术家控制的微圆柱模型来制作织物。 纹理可用于改变粗糙度（roughness）、颜色（color）和线方向（thread direction），线方向可以指向表面的平面之外，用于对天鹅绒（velvet）和类似织物进行建模。 可以为织物的经线（warp）和纬线（weft）设置不同的参数，以模拟复杂的变色织物，例如闪光丝（shot silk）。 该模型被归一化为以达到能量守恒的目的。
 
+Sadeghi 等人 ^[1526]^ 提出了一种基于对织物样品（fabric sample）和单根线（individual threads）的测量的微圆柱模型。 该模型还考虑了线之间的线间（inter-thread）遮蔽（masking）和阴影（shadowing）。
 
-
-
-
-
-
+在某些情况下，实际上的头发 BSDF 模型（第 14.7 节）会用于布料。 RenderMan 的 PxrSurface 材料 ^[732]^ 有一个“绒毛（fuzz）”波瓣，它使用 Marschner 等人 ^[1128]^（第 14.7 节）的头发模型中的 **R** 项。 Wu 和 Yuksel ^[1924][1926]^ 在实时布料渲染系统中实现的模型之一源自迪士尼用于动画电影 ^[1525]^ 中的头发模型。
 
 
 
@@ -94,10 +92,18 @@ $$
 * [81] Ashikhmin, Michael, and Simon Premoˇze, “Distribution-Based BRDFs,” Technical Report, 2007. Cited on p. 357
 * [98] Banks, David, “Illumination in Diverse Codimensions,” in SIGGRAPH ’94: Proceedings of the 21st Annual Conference on Computer Graphics and Interactive Techniques, ACM, pp. 327– 334, July 1994. Cited on p. 359
 * [214] Burley, Brent, “Physically Based Shading at Disney,” SIGGRAPH Practical Physically Based Shading in Film and Game Production course, Aug. 2012. Cited on p. 325, 336, 340, 342, 345, 353, 354, 357, 364
+* [348] Deshmukh, Priyamvad, Feng Xie, and Eric Tabellion, “DreamWorks Fabric Shading Model: From Artist Friendly to Physically Plausible,” in ACM SIGGRAPH 2017 Talks, article no. 38, July 2017. Cited on p. 359
 * [442] Estevez, Alejandro Conty, and Christopher Kulla, “Production Friendly Microfacet Sheen BRDF,” Technical Report, Sony Imageworks, 2017. Cited on p. 358
 * [631] Hable, John, “Uncharted 2: Character Lighting and Shading,” SIGGRAPH Advances in Real-Time Rendering in Games course, July 2010. Cited on p. 357, 635
+* [732] Hery, Christophe, and Junyi Ling, “Pixar’s Foundation for Materials: PxrSurface and PxrMarschnerHair,” SIGGRAPH Physically Based Shading in Theory and Practice course, Aug. 2017. Cited on p. 321, 343, 359, 363, 364, 370
 * [825] Jiang, Yibing, “The Process of Creating Volumetric-Based Materials in Uncharted 4,” SIGGRAPH Advances in Real-Time Rendering in Games course, July 2016. Cited on p. 356, 357, 358, 359
 * [847] Kajiya, James T., and Timothy L. Kay, “Rendering Fur with Three Dimensional Textures,” Computer Graphics (SIGGRAPH ’89 Proceedings), vol. 17, no. 3, pp. 271–280, July 1989. Cited on p. 359, 642
 * [919] Koenderink, Jan J., and Sylvia Pont, “The Secret of Velvety Skin,” Journal of Machine Vision and Applications, vol. 14, no. 4, pp. 260–268, 2002. Cited on p. 356
 * [947] Kulla, Christopher, and Alejandro Conty, “Revisiting Physically Based Shading at Imageworks,” SIGGRAPH Physically Based Shading in Theory and Practice course, Aug. 2017. Cited on p. 321, 336, 343, 346, 347, 352, 353, 358, 363, 364
+* [1128] Marschner, Stephen R., Henrik Wann Jensen, Mike Cammarano, Steve Worley, and Pat Hanrahan, “Light Scattering from Human Hair Fibers,” ACM Transactions on Graphics (SIGGRAPH 2003), vol. 22, no. 3, pp. 780–791, 2000. Cited on p. 359, 640, 641, 642, 643, 644
 * [1266] Neubelt, D., and M. Pettineo, “Crafting a Next-Gen Material Pipeline for The Order: 1886,” SIGGRAPH Physically Based Shading in Theory and Practice course, July 2013. Cited on p. 357, 365, 370
+* [1525] Sadeghi, Iman, Heather Pritchett, Henrik Wann Jensen, and Rasmus Tamstorf, “An Artist Friendly Hair Shading System,” in ACM SIGGRAPH 2010 Papers, ACM, article no. 56, July 2010. Cited on p. 359, 644
+* [1526] Sadeghi, Iman, Oleg Bisker, Joachim De Deken, and Henrik Wann Jensen, “A Practical Microcylinder Appearance Model for Cloth Rendering,” ACM Transactions on Graphics, vol. 32, no. 2, pp. 14:1–14:12, Apr. 2013. Cited on p. 359
+* [1924] Wu, Kui, and Cem Yuksel, “Real-Time Fiber-Level Cloth Rendering,” Symposium on Interactive 3D Graphics and Games, Mar. 2017. Cited on p. 359
+* [1926] Wu, Kui, and Cem Yuksel, “Real-Time Cloth Rendering with Fiber-Level Detail,” IEEE Transactions on Visualization and Computer Graphics, to appear. Cited on p. 359
+* [1937] Xie, Feng, and Jon Lanz, “Physically Based Shading at DreamWorks Animation,” SIGGRAPH Physically Based Shading in Theory and Practice course, Aug. 2017. Cited on p. 336, 359, 364
