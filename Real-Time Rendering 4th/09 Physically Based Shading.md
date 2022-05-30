@@ -6,7 +6,7 @@
 
 除 BRDF 之外，大多数织物都具有高频空间变化，这也是创造令人信服的布料外观的关键 ^[825]^。 请参见图 9.42。
 
-![Figure 9.42](E:\My Documents\Github\MyImageBed\Real-Time Rendering 4th\Chapter 09\Figure 9.42.png "图 9.42")
+![Figure 9.42](https://github.com/Orznijiang/MyImageBed/blob/main/Real-Time%20Rendering%204th/Chapter%2009/Figure%209.42.png?raw=true "图 9.42")
 
 **图 9.42 使用为游戏 Uncharted 4 构建的布料系统的材质。**
 
@@ -57,7 +57,7 @@ D(m)=\frac{\chi^+(\mathbf{n}\cdot\mathbf{m})(2+\frac{1}{\alpha})(1-(\mathbf{n}\c
 $$
 尽管该 NDF 的 Smith 遮蔽阴影（masking-shadowing）函数没有封闭形式的解，但 Imageworks 能够用一个解析函数（analytical function）逼近其数值解。 Estevez 和 Kulla ^[442]^ 讨论了**关于遮蔽阴影函数**和**光泽项与 BRDF 其余部分之间的能量守恒**的细节。 有关使用 Imageworks 光泽项渲染的一些示例，请参见图 9.43。
 
-![Figure 9.43](E:\My Documents\Github\MyImageBed\Real-Time Rendering 4th\Chapter 09\Figure 9.43.png "图 9.43")
+![Figure 9.43](https://github.com/Orznijiang/MyImageBed/blob/main/Real-Time%20Rendering%204th/Chapter%2009/Figure%209.43.png?raw=true "图 9.43")
 
 **图 9.43 Imageworks 光泽镜面反射项添加到红色漫反射项。**
 
