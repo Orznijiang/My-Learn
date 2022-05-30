@@ -4,7 +4,7 @@
 
 布料往往具有不同于其他类型材料的微观几何形状。 根据织物类型，它可能具有高度重复的编织微结构、从表面垂直突出的圆柱体（cylinders）（线（threads）），或两者兼而有之。 因此，布料表面具有与众不同的表现，通常需要专门的着色模型，例如各向异性镜面高光（anisotropic specular highlights）、粗糙散射（asperity scattering） ^[919]^（光通过突出的半透明纤维散射引起的明亮边缘效应），甚至颜色随观察方向的变化（ 由穿过织物的不同颜色的线引起）。
 
-除了 BRDF，大多数织物都具有高频空间变化，这也是创造令人信服的布料外观的关键 ^[825]^。 请参见图 9.42。
+除 BRDF 之外，大多数织物都具有高频空间变化，这也是创造令人信服的布料外观的关键 ^[825]^。 请参见图 9.42。
 
 ![Figure 9.42](E:\My Documents\Github\MyImageBed\Real-Time Rendering 4th\Chapter 09\Figure 9.42.png "图 9.42")
 
@@ -40,7 +40,7 @@ $$
 
 Ashikhmin 等人 ^[78]^ 提出使用倒置高斯 NDF （normal distribution function）对天鹅绒（velvet）进行建模。 该 NDF 在之后的工作中稍作修改了 ^[81]^，还提出了一种微平面 BRDF 的变体形式，用于一般的材料建模，没有遮蔽阴影（masking-shadowing）项，但修改了分母。
 
-游戏 《秩序：1886》（The Order : 1886） ^[1266]^ 中使用的布料 BRDF 结合了来自 Ashikhmin 和 Premoze 后来的报告 ^[81]^ 中修改后的微平面 BRDF 和的天鹅绒 NDF 的广义形式，以及公式 9.63 中的漫反射项。 广义天鹅绒的 NDF 项是
+游戏 《秩序：1886》（The Order : 1886） ^[1266]^ 中使用的布料 BRDF 将来自 Ashikhmin 和 Premoze 后来的报告 ^[81]^ 中修改后的微平面 BRDF 和天鹅绒 NDF 的广义形式，与公式 9.63 中的漫反射项进行结合。 广义天鹅绒的 NDF 项是
 $$
 D(m)=\frac{\chi^+(\mathbf{n},\mathbf{m})}{\pi(1+k_{amp}\alpha^2)}(1+\frac{k_{amp}exp(\frac{(\mathbf{n},\mathbf{m})^2}{\alpha^2((\mathbf{n},\mathbf{m})^2-1)})}{(1-(\mathbf{n},\mathbf{m})^2)^2}),\tag{9.73}
 $$
