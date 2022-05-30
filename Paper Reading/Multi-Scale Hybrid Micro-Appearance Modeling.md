@@ -81,7 +81,7 @@ Jakob等人 ^[19]^ 引入了对标准辐射传输框架 ^[20]^ 的推广，以�
 
 基于这种理解，我们的混合模型利用高度场来捕获由紧密排列的规则纤维形成的织物顶部表面和一个薄体积来描述飞散纤维（图 1）。
 
-![Figure 1](E:\Backup Folder\LiHaoyu\github\MyImageBed\Paper-Reading\Rendering\Fabric\Multi-Scale Hybrid Micro-Appearance Modeling\Figure 1.png "图 1")
+![Figure 1](https://github.com/Orznijiang/MyImageBed/blob/main/Paper-Reading/Rendering/Fabric/Multi-Scale%20Hybrid%20Micro-Appearance%20Modeling/Figure%201.png?raw=true "图 1")
 
 **图 1：我们的混合模型涉及法线映射高度场和薄体积，分别捕获织物主表面纤维和飞散纤维**
 
@@ -111,7 +111,7 @@ $$
 
 我们的模型可以进行预过滤，从而产生无需大量超采样即可有效渲染的多尺度表示。 在下一节中，我们将介绍一种新技术，将输入的微外观模型转换为不同尺度的混合表示（§5）。
 
-<img src="E:\Backup Folder\LiHaoyu\github\MyImageBed\Paper-Reading\Rendering\Fabric\Multi-Scale Hybrid Micro-Appearance Modeling\Figure 2.png" alt="Figure 2" title="图 2" style="zoom:80%;" />
+<img src="https://github.com/Orznijiang/MyImageBed/blob/main/Paper-Reading/Rendering/Fabric/Multi-Scale%20Hybrid%20Micro-Appearance%20Modeling/Figure%202.png?raw=true" title="图 2" style="zoom:80%;" />
 
 **图 2：我们的 BRDF 模型 1 使用的角度定义。**
 
