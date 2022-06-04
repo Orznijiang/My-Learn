@@ -1005,3 +1005,222 @@
 
 ## 第9章 内存模型和名称空间
 
+1. **对于下面的情况，应使用哪种存储方案？**
+
+   1. **`homer`是函数的形参。**
+
+      `homer`将自动成为自动变量。
+
+   2. **`secret`变量由两个文件共享。**
+
+      应该在一个文件中将`secret`定义为外部变量，并在第二个文件中使用`extern`来声明它。
+
+   3. **`topsecret`变量由一个文件中的所有函数共享，但对于其他文件来说是隐藏的。**
+
+      可以在外部定义前加上关键字`static`，将`topsecret`定义为一个有内部链接的静态变量。也可以在一个未命名的名称空间中进行定义。
+
+   4. **`benncalled`记录包含它的函数被调用的次数。**
+
+      应在函数的声明前加上关键字`static`，将`beencalled`定义为一个本地静态变量。
+
+2. **`using`声明和`using`编译指令之间有何区别？**
+
+   `using`声明使得名称空间中的单个名称可用，其作用域与`using`所在的声明区域相同。`using`编译指令使名称空间中的所有名称可用。使用`using`编译指令时，就像在一个包含`using`声明和名称空间本身的最小声明区域中声明了这些名称一样。
+
+3. **重新编写下面的代码，使其不使用`using`声明和`using`编译指令。**
+
+   ```
+   #include <iostream>
+   using namespace std;
+   int main()
+   {
+   	double x;
+   	cout << "Enter value: ";
+   	while(! (cin >> x))
+   	{
+   		cout << "Bad input. Please enter a number: ";
+   		cin.clear();
+   		while(cin.get() != '\n')
+   			continue;
+   	}
+   	cout << "Value = " << x << endl;
+   	return 0;
+   }
+   ```
+
+   ```
+   #include <iostream>
+   int main()
+   {
+   	double x;
+   	std::cout << "Enter value: ";
+   	while(! (std::cin >> x))
+   	{
+   		std::cout << "Bad input. Please enter a number: ";
+   		std::cin.clear();
+   		while(std::cin.get() != '\n')
+   			continue;
+   	}
+   	std::cout << "Value = " << x << std::endl;
+   	return 0;
+   }
+
+4. **重新编写下面的代码，使其使用`using`声明，而不是`using`编译指令。**
+
+   ```
+   #include <iostream>
+   using namespace std;
+   int main()
+   {
+   	double x;
+   	cout << "Enter value: ";
+   	while(! (cin >> x))
+   	{
+   		cout << "Bad input. Please enter a number: ";
+   		cin.clear();
+   		while(cin.get() != '\n')
+   			continue;
+   	}
+   	cout << "Value = " << x << endl;
+   	return 0;
+   }
+   ```
+
+   ```
+   #include <iostream>
+   int main()
+   {
+   	using std::cin;
+   	using std::cout;
+   	using std::endl;
+   	double x;
+   	cout << "Enter value: ";
+   	while(! (cin >> x))
+   	{
+   		cout << "Bad input. Please enter a number: ";
+   		cin.clear();
+   		while(cin.get() != '\n')
+   			continue;
+   	}
+   	cout << "Value = " << x << endl;
+   	return 0;
+   }
+
+5. **在一个文件中调用`average(3,6)`函数时，它返回两个`int`参数的`int`平均值，在同一个程序的另一个文件中调用时，它返回两个`int`参数的`double`平均值。应如何实现？**
+
+   可以在每个文件中包含单独的静态函数定义。或者每个文件都在未命名的名称空间中定义一个合适的`average()`函数。
+
+6. **下面的程序由两个文件组成，该程序显示什么内容？**
+
+   ```
+   // file1.cpp
+   #include <iostream>
+   using namespace std;
+   void other();
+   void another();
+   int x = 10;
+   int y;
+   
+   int main()
+   {
+   	cout << x << endl;
+   	{
+   		int x = 4;
+   		cout << x << endl;
+   		cout << y << endl;
+   	}
+   	other();
+   	another();
+   	return 0;
+   }
+   
+   void other()
+   {
+   	int y = 1;
+   	cout << "Other: " << x << ", " << y << endl;
+   }
+   
+   // file2.cpp
+   #include <iostream>
+   using namespace std;
+   extern int x;
+   namespace
+   {
+   	int y = -4;
+   }
+   
+   void another()
+   {
+   	cout << "another(): " << x << ", " << y << endl;
+   }
+   ```
+
+   ```
+   10
+   4
+   0
+   Other: 10, 1
+   another: 10, -4
+
+7. **下面的代码将显示什么内容？**
+
+   ```
+   #include <iostream>
+   using namespace std;
+   void other();
+   namespace n1
+   {
+   	int x = 1;
+   }
+   
+   namespace n2
+   {
+   	int x = 2;
+   }
+   
+   int main()
+   {
+   	using namespace n1;
+   	cout << x << endl;
+   	{
+   		int x = 4;
+   		cout << x << ", " << n1::x << ", " << n2::x << endl;
+   	}
+   	using n2::x;
+   	cout << x << endl;
+   	other();
+   	return 0;
+   }
+   
+   void other()
+   {
+   	using namespace n2;
+   	cout << x << endl;
+   	{
+   		int x = 4;
+   		cout << x << ", " << n1::x << ", " << n2::x << endl;
+   	}
+   	using n2::x;
+   	cout << x << endl;
+   }
+   ```
+
+   ```
+   1
+   4, 1, 2
+   2
+   2
+   4, 1, 2
+   2
+
+### 编程练习注意点
+
+* 定位`new`使用的缓冲位置的数据类型不需要和要放入的数据类型一致
+* 
+
+
+
+
+
+
+
