@@ -1216,7 +1216,109 @@
 ### 编程练习注意点
 
 * 定位`new`使用的缓冲位置的数据类型不需要和要放入的数据类型一致
-* 
+
+
+
+## 第10章 对象和类
+
+1. **什么是类？**
+
+   类是用户定义的类型的定义。类声明指定了数据将如何存储，同时指定了用来访问和操纵这些数据的方法（类成员函数）。
+
+2. **类如何实现抽象、封装和数据隐藏？**
+
+   类成员函数表示人们可以使用类方法的公有接口对类对象执行的操作，这是抽象。类的数据成员可以是私有的（默认值），这意味着只能通过成员函数来访问这些数据，这是数据隐藏。实现的具体细节（如数据表示和方法的代码）都是隐藏的，这是封装。
+
+3. **对象和类之间的关系是什么？**
+
+   类定义了一种类型，包括如何使用它。对象是一个变量或其他数据对象（如由`new`生成的），并根据类定义被创建和使用。类和对象之间的关系同标准类型与其变量之间的关系相同。
+
+4. **除了是函数之外，类函数成员与类数据成员之间的区别是什么？**
+
+   如果创建给定类的多个对象，则每个对象都有其自己的数据内存空间；但所有的对象都使用同一组成员函数（通常，方法是公有的，而数据是私有的，但这只是策略方面的问题，而不是对类的要求）。
+
+5. **定义一个类来表示银行账户。数据成员包括储户姓名、账号（使用字符串）和存款。成员函数执行如下操作：**
+
+   1. **创建一个对象并将其初始化；**
+   2. **显示储户姓名、账号和存款；**
+   3. **存入参数指定的存款；**
+   4. **取出参数指定的存款；**
+
+   **请提供类声明，而不用给出方法实现。（编程练习1将要求编写实现）**
+
+   ```
+   #include <string>
+   // class definition
+   class BankAccount
+   {
+   	private:
+   		std::string name;
+   		std::string acctnum;
+   		double balance;
+   	public:
+   		BankAccount(const std::string& client, const std::string& num, double bal = 0.0);
+   		void show(void) const;
+   		void deposit(double cash);
+   		void withdraw(double cash);
+   };
+
+6. **类构造函数在何时被调用？类析构函数呢？**
+
+   在创建类对象或显示调用构造函数时，类的构造函数都将被调用。当对象过期时，类的析构函数将被调用。
+
+7. **给出复习题5中的银行账户类的构造函数的代码。**
+
+   ```
+   BankAccount::BankAccount(const std::string& client, const std::string& num, double bal)
+   {
+   	name = client;
+   	acctnum = num;
+   	balance = bal;
+   }
+   ```
+
+   请记住，默认参数位于原型中，而不是函数定义中。
+
+8. **什么是默认构造函数，拥有默认构造函数有何好处？**
+
+   默认构造函数是没有参数或所有参数都有默认值的构造函数。拥有默认构造函数后，可以声明对象，而不初始化它，即使已经定义了初始化构造函数。它还使得能够声明数组。
+
+9. **修改`Stock`类的定义（`stock20.h`中的版本），使之包含返回各个数据成员值的成员函数。注意：返回公司名的成员函数不应为修改数组提供便利，也就是说，不能简单地返回`string`引用。**
+
+   ```
+   // stock30.h
+   #ifndef STOCK30_H_
+   #define STOCK30_H_
+   #include <string>
+   
+   class Stock
+   {
+   	private:
+   		std::string company;
+   		long shares;
+   		double share_val;
+   		double total_val;
+   		void set_tot() { total_val = shares * share_val; }
+   	public:
+   		Stock(); // default constructor
+   		Stock(const std::string& co, long n, double pr);
+   		~Stock() {} // do-nothing destructor
+   		void buy(long num, double price);
+   		void sell(long num, double price);
+   		void update(double price);
+   		void show() const;
+   		const Stock& topval(const Stock& s) const;
+   		int numshares() const { return shares; }
+   		double shareval() const { return share_val; }
+   		double totalval() const { return total_val; }
+   		const string& co_name() const { return company; }
+   };
+   
+   #endif
+
+10. **`this`和`*this`是什么？**
+
+    `this`指针是类方法可以使用的指针，它指向用于调用方法的对象。因此，`this`是对象的地址，`*this`是对象本身。
 
 
 
