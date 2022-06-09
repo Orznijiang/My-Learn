@@ -1340,3 +1340,55 @@
 
 
 
+## 第11章 使用类
+
+1. **使用成员函数为`Stonewt`类重载乘法运算符，该运算符将数据成员与`double`类型的值相乘。注意，用英石和磅表示时，需要进位。也就是说，将10英石8磅乘以2等于21英石2磅。**
+
+   ```
+   // prototype
+   Stonewt opetator*(double mult);
+   
+   // definition - let constructor do the work
+   Stonewt Stonewt::operator*(double mult){
+   	return Stonewt(mult * pounds);
+   }
+
+2. **友元函数与成员函数之间的区别是什么？**
+
+   成员函数是类定义的一部分，通过特定的对象来调用。成员函数可以隐式访问调用对象。友元函数不是类的组成部分，因此被称为直接函数调用。友元函数不能隐式访问类对象，而必须必须将对象用于作为参数传递的对象。
+
+3. **非成员函数必须是友元才能访问类成员吗？**
+
+   要访问类的私有成员，则必须使用友元函数；只需要访问类的公有成员时，不需要友元函数。
+
+4. **使用友元函数为`Stonewt`类重载乘法运算符，该运算符将`double`值与`Stonewt`值相乘。**
+
+   ```
+   // prototype
+   friend Stonewt operator*(double mult, const Stonewt& s);
+   
+   // definition - let constructor do the work
+   Stonewt operator*(double mult, const Stonewt& s){
+   	return Stonewt(mult * s.pounds);
+   }
+
+5. **哪些运算符不能重载？**
+
+   * `sizeof`
+   * `.`
+   * `.*`
+   * `::`
+   * `?:`
+
+6. **在重载运算符`=、()、[]、->`时，有什么限制？**
+
+   这些运算符必须使用成员函数来定义。
+
+7. **为`Vector`类定义一个转换函数，将`Vector`类转换为一个`double`类型的值，后者表示矢量的长度。**
+
+   ```
+   // prototype and inline definition
+   operator double() { return mag; }
+   ```
+
+   但使用普通的`magval()`方法比定义该转换函数更符合逻辑。
