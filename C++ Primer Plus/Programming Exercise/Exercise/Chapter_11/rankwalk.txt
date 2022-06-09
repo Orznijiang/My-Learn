@@ -1,0 +1,10 @@
+Target Distance: 50, Step Size: 20
+0: (x,y) = (0, 0)
+1: (x,y) = (15.5429, 12.5864)
+2: (x,y) = (3.47296, 19.6962)
+3: (x,y) = (-6.8404, 18.7939)
+After 3 steps, the subject has the following location:
+(x,y) = (12.1755, 51.0764)
+ or
+(m,a) = (52.5075, 76.5922)
+Average outward distance per step = 17.5025
