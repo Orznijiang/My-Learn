@@ -24,6 +24,12 @@
     <ClInclude Include="11-04-mytime.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="11-05-stonewt.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="11-07-complex.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="11-01-vect.cpp">
@@ -45,6 +51,21 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="11-04-usetime.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="11-05-stonewt.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="11-05-usestone.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="11-06-usestone.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="11-07-main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="11-07-complex.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

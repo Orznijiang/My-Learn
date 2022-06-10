@@ -3,7 +3,7 @@
 #include <iostream>
 #include "11-04-mytime.h"
 
-int main() {
+int main04() {
 	using std::cout;
 	using std::endl;
 	Time aida(3, 35);

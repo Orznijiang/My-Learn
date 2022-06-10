@@ -142,6 +142,8 @@
     <ClInclude Include="11-01-vect.h" />
     <ClInclude Include="11-02-vect.h" />
     <ClInclude Include="11-04-mytime.h" />
+    <ClInclude Include="11-05-stonewt.h" />
+    <ClInclude Include="11-07-complex.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="11-01-randwalk.cpp" />
@@ -151,6 +153,11 @@
     <ClCompile Include="11-03-randwalk.cpp" />
     <ClCompile Include="11-04-mytime.cpp" />
     <ClCompile Include="11-04-usetime.cpp" />
+    <ClCompile Include="11-05-stonewt.cpp" />
+    <ClCompile Include="11-05-usestone.cpp" />
+    <ClCompile Include="11-06-usestone.cpp" />
+    <ClCompile Include="11-07-complex.cpp" />
+    <ClCompile Include="11-07-main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
