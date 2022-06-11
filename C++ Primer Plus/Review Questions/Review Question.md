@@ -1403,6 +1403,180 @@
 
 ## 第12章 类和动态内存分配
 
+1. **假设`String`类有如下私有成员：**
+
+   ```
+   class String
+   {
+   	private:
+   		char* str; // points to string allocated by new
+   		int len;   // holds length of string
+   		// ...
+   };
+   ```
+
+   1. **下述默认构造函数有什么问题？**
+
+      ```
+      String::String() {}
+      ```
+
+      语法是正确的，但该构造函数没有初始化`str`指针，应将其设置为`NULL`或使用`new []`来初始化。
+
+   2. **下述构造函数有什么问题？**
+
+      ```
+      String::String(const char* s)
+      {
+      	str = s;
+      	len = strlen(s);
+      }
+      ```
+
+      该构造函数没有创建新的字符串，而只是复制了原有字符串的地址。应使用`new []`和`strcpy()`。
+
+   3. **下述构造函数有什么问题？**
+
+      ```
+      String::String(const char* s)
+      {
+      	strcpy(str, s);
+      	len = strlen(s);
+      }
+      ```
+
+      该构造函数复制了字符串，但没有事先给它分配存储空间。应使用`new char[len + 1]`来分配适当数量的内存。
+
+2. **如果你定义了一个类，其指针成员是使用`new`初始化的，请指出可能出现的3个问题以及如何纠正这些问题。**
+
+   1. 首先，当这种类型的对象过期时，对象的成员指针指向的数据仍将保留在内存中，这将占用空间，同时不可访问，因为指针已经丢失。可以让类析构函数删除构造函数中`new`分配的内存，来解决这种问题。
+   2. 其次，析构函数释放这种内存后，如果程序将这样的对象初始化为另一个对象，则析构函数将试图释放这些内存两次。这是因为将一个对象初始化为另一个对象的默认初始化，将复制指针值，但不复制指向的数据，这将使两个指针指向相同的数据。解决方法是，定义一个复制构造函数，使初始化复制指向的数据。
+   3. 第三，将一个对象赋给另一个对象也将导致两个指针指向相同的数据。解决方法是重载赋值运算符，使之复制数据，而不是指针。
+
+3. **如果没有显式提供类方法，编译器将自动生成哪些类方法？请描述这些隐式生成的函数的行为。**
+
+   C++自动提供了下面这些成员函数：
+
+   * 如果没有定义构造函数，将提供默认构造函数。
+   * 如果没有定义复制构造函数，将提供复制构造函数。
+   * 如果没有定义赋值运算符，将提供赋值运算符。
+   * 如果没有定义析构函数，将提供默认析构函数。
+   * 如果没有定义地址运算符，将提供地址运算符。
+
+   默认构造函数不完成任何工作，但使得能够声明数组和未初始化的对象。默认复制构造函数和默认赋值运算符使用成员赋值。默认析构函数也不完成任何工作。隐式地址运算符返回调用对象的地址（即`this`指针的值）。
+
+4. **找出并改正下述类声明中的错误：**
+
+   ```
+   class nifty
+   {
+   	// data
+   	char personality[];
+   	int talents;
+   	// methods
+   	nifty();
+   	nifty(char* s);
+   	ostream& operator<<(ostream& os, nifty& n);
+   };
+   
+   nifty:nifty()
+   {
+   	personality = NULL;
+   	talents = 0;
+   }
+   
+   nifty:nifty(char* s)
+   {
+   	personality = new char [strlen(s)];
+   	personality = s;
+   	talents = 0;
+   }
+   
+   ostream& nifty:operator<<(ostream& os, nifty& n)
+   {
+   	os << n;
+   }
+   ```
+
+   应将`personality`成员声明为字符数组或`char`指针，且没有将方法设置为公有的。修改如下：
+
+   ```
+   class nifty
+   {
+   	// data
+   	char personality[40]; // provide array size
+   	int talents;
+   public:                   // needed
+   	// methods
+   	nifty();
+   	nifty(char* s);
+   	friend ostream& operator<<(ostream& os, const nifty& n); // add friend, const
+   };
+   
+   nifty:nifty()
+   {
+   	personality = '\0';
+   	talents = 0;
+   }
+   
+   nifty:nifty(char* s)
+   {
+   	//personality = new char [strlen(s)];
+   	strcpy(personality, s);
+   	talents = strlen(s);
+   }
+   
+   ostream& nifty:operator<<(ostream& os, nifty& n)
+   {
+   	os << n.personality << '\n';
+   	os << n.talents << '\n';
+   	return os
+   }
+
+5. **对于下面的类声明：**
+
+   ```
+   class Golfer
+   {
+   	private:
+   		char* fullname; // points to string containing golfer's name
+   		int games;      // holds number of golf games played
+   		int* scores;    // points to first element of array of golf scores
+   	public:
+   		Golfer();
+   		Golfer(const char* name, int g = 0);
+   		// creates empty dynamic array of g elements if g > 0
+   		Golfer(const Golfer& g);
+   		~Golfer();
+   };
+   ```
+
+   1. **下列各条语句将调用哪些类方法？**
+
+      ```
+      Golfer nancy;                     // #1
+      Golfer lulu("Littlw Lulu");       // #2
+      Golfer roy("Roy Hobbs", 12);      // #3
+      Golfer* par = new Golfer;         // #4
+      Golfer next = lulu;               // #5
+      Golfer hazzard = "Weed Thwacker"; // #6
+      *par = nancy;                     // #7
+      nancy = "Nancy Putter";           // #8
+      ```
+
+      1. `Golfer()`
+      2. `Golfer(const char* name, int g = 0)`
+      3. `Golfer(const char* name, int g = 0)`
+      4. `Golfer()`
+      5. `Golfer(const Golfer& g)` 或加上赋值运算符
+      6. `Golfer(const char* name, int g = 0)` 或加上赋值运算符
+      7. 赋值运算符
+      8. `Golfer(const char* name, int g = 0)` 以及赋值运算符
+
+   2. **很明显，类需要有另外几个方法才能更有用，但是类需要哪些方法才能防止数据被破坏呢？**
+
+      类应定义一个复制数据（深拷贝，而不是地址）的赋值运算符。
+
 
 
 ### 笔记
