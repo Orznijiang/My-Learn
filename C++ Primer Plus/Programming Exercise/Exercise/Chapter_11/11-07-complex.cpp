@@ -53,7 +53,6 @@ std::ostream& operator<<(std::ostream& os, const Complex& c)
 
 std::istream& operator>>(std::istream& is, Complex& c)
 {
-	int a;
 	std::cout << "real: ";
 	is >> c.real;
 	std::cout << "imaginary: ";
