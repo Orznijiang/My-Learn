@@ -1612,7 +1612,57 @@
 
 ## 第13章 类继承
 
+1. 派生类从基类那里继承了什么？
 
+2. 派生类不能从基类那里继承什么？
+
+3. 假设`baseDMA::operator=()`函数的返回类型为`void`，而不是`baseDMA &`，这将有什么后果？如果返回类型为`baseDMA`，而不是`baseDMA &`，又将有什么后果？
+
+4. 创建和删除派生类对象时，构造函数和析构函数调用的顺序是怎样的？
+
+5. 如果派生类没有添加任何数据成员，它是否需要构造函数？
+
+6. 如果基类和派生类定义了同名的方法，当派生类对象调用该方法时，被调用的将是哪个方法？
+
+7. 在什么情况下，派生类应定义赋值运算符？
+
+8. 可以将派生类对象的地址赋给基类指针吗？可以将基类对象的地址赋给派生类指针吗？
+
+9. 可以将派生类对象赋给基类对象吗？可以将基类对象赋给派生类对象吗？
+
+10. 假设定义了一个函数，它将基类对象的引用作为参数。为什么该函数也可以将派生类对象作为参数？
+
+11. 假设定义了一个函数，它将基类对象作为参数（即函数按值传递基类对象）。为什么该函数也可以将派生类对象作为参数？
+
+12. 为什么通常按引用传递对象比按值传递对象的效率更高？
+
+13. 假设`Corporation`是基类，`PublicCorporation`是派生类。再假设这两个类都定义了`head()`函数，`ph`是指向`Corporation`类型的指针，且被赋给了一个`PublicCorporation`对象的地址。如果基类将`head()`定义为：
+
+    1. 常规非虚方法；
+    2. 虚方法；
+
+    则`ph -> head()`将被如何解释？
+
+14. 下述代码有什么问题？
+
+    ```
+    class Kitchen
+    {
+    	private:
+    		double kit_sq_ft;
+    	public:
+    		Kitchen() { kit_sq_ft = 0.0; }
+    		virtual double area() const { return kit_sq_ft \* kit_sq_ft; }
+    };
+    
+    class House : public Kitchen
+    {
+    	private:
+    		double all_sq_ft;
+    	public:
+    		House() { all_sq_ft += kit_sq_ft; }
+    		double area(const char* s) const { cout << s; return all_sq_ft; }
+    };
 
 
 
