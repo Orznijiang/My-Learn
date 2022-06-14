@@ -1723,7 +1723,145 @@
 
 ## 第14章 C++中的代码重用
 
+1. **以A栏的类为基类时，B栏的类采用公有派生还是私有派生更合适。**
 
+   ```
+   A						B
+   
+   class Bear				class PolarBear
+   class Kitchen			class Home
+   class Person			class Programmer
+   class Person			class HorseAndJockey
+   class Person、class Automobile 	class Driver
+   ```
+
+   1. 公有
+   2. 私有
+   3. 公有
+   4. 私有
+   5. Person公有，Automobile私有
+
+2. **假设有下面的定义：**
+
+   ```
+   class Frabjous
+   {
+   	private:
+   		char fab[20];
+   	public:
+   		Frabjous(const char* s = "C++") : fabs(s) {  }
+   		virtual void tell() { cout << fab; }
+   };
+   
+   class Gloam
+   {
+   	private:
+   		int glip;
+   		Frabjous fb;
+   	public:
+   		Gloam(int g = 0, const char* s = "C++");
+   		Gloam(int g, const Frabjous& f);
+   		void tell();
+   };
+   ```
+
+   **假设`Gloam`版本的`tell()`应显示`glip`和`fb`的值，请为这3个`Gloam`方法提供定义。**
+
+   ```
+   Gloam::Gloam(int g, const char* s) : glip(g), fb(s) {}
+   Gloam::Gloam(int g, const Frabjous& fr) : glip(g), fb(fr) {}
+   // note: the above uses the default Frabjous copy constructor
+   void Gloam::tell()
+   {
+   	fb.tell();
+   	cout << glip << endl;
+   }
+
+3. **假设有下面的定义：**
+
+   ```
+   class Frabjous
+   {
+   	private:
+   		char fab[20];
+   	public:
+   		Frabjous(const char* s = "C++") : fabs(s) {  }
+   		virtual void tell() { cout << fab; }
+   };
+   
+   class Gloam : private Frabjous
+   {
+   	private:
+   		int glip;
+   	public:
+   		Gloam(int g = 0, const char* s = "C++");
+   		Gloam(int g, const Frabjous& f);
+   		void tell();
+   };
+   ```
+
+   **假设`Gloam`版本的`tell()`应显示`glip`和`fb`的值，请为这3个`Gloam`方法提供定义。**
+
+   ```
+   Gloam::Gloam(int g, const char* s) : glip(g), Frabjous(s) {}
+   Gloam::Gloam(int g, const Frabjous& fr) : glip(g), Frabjous(fr) {}
+   // note: the above uses the default Frabjous copy constructor
+   void Gloam::tell()
+   {
+   	Frabjous::tell();
+   	cout << glip >> endl;
+   }
+
+4. **假设有下面的定义，它是基于程序清单14.13中的`Stack`模板和程序清单14.10中的`Worker`类的：**
+
+   ```
+   Stack<Worker *> sw;
+   ```
+
+   **请写出将生成的类声明。只实现类声明，不实现非内联类方法。**
+
+   ```
+   templte <class Type>
+   class Stack<Worker*>
+   {
+   	private:
+   		enum{MAX = 10};		// constant specific to class
+   		Worker * items[MAX];// holds stack items
+   		int top;			// index for top stack item
+   	public:
+   		Stack();
+   		bool isempty();
+   		bool isfull();
+   		bool push(const Worker * & item);	// add item to stack
+   		bool pop(Worker * & item);			// pop top into item
+   };
+
+5. **使用本章中的模板定义对下面的内容进行定义：**
+
+   * **`string`对象数组；**
+
+     `ArrayTP<string> sa;`
+     
+   * **`double`数组栈；**
+
+     `StackTP<ArrayTP<double>> stck_arr_db;`
+
+   * **指向`Worker`对象的指针的栈数组；**
+
+     `ArrayTP<SatckTP<Worker*>> arr_stk_wpr;`
+
+   **程序清单14.18生成了多少个模板类定义？**
+
+   程序清单14.18生成4个模板：
+
+   * `ArrayTP<int, 10>`
+   * `ArrayTP<double, 10>`
+   * `ArrayTP<int, 5>`
+   * `ArrayTP<ArrayTP<int, 5>, 10>`
+
+6. **指出虚基类与非虚基类之间的区别。**
+
+   如果两条继承路线有相同的祖先，则类中将包含祖先成员的两个拷贝。将祖先类作为虚基类可以解决这种问题。
 
 
 
