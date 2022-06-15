@@ -2060,3 +2060,25 @@
 * `catch(...)`可以捕获所有异常，类似`switch`的`default`
 * RTTI只适用于包含虚函数的类
 * 赋值表达式的值是左边的值
+
+
+
+
+
+## 第16章 string类和标准模板库
+
+
+
+
+
+### 笔记
+
+* 所有智能指针类都有一个`explicit`构造函数，该构造函数将指针作为参数。因此，不会自动将指针转换为只能指针对象
+* 程序试图将一个`unique_ptr`赋给另一个时，如果源`unique_ptr`是个临时右值，编译器允许这样做；如果源`unique_ptr`将存在一段时间，编译器将禁止这样做。相对的，`auto_ptr`不会禁止这种操作，但可能导致运行阶段的程序崩溃（尝试释放已经被释放过的内存）
+* 禁止（其实是建议，编译器并不禁止）在容器对象中使用`auto_ptr`，但允许使用`unique_ptr`
+* `unique_ptr`有针对`new []`和`delete []`的版本，而`auto_ptr`没有
+* 使用`new`分配内存时，才能使用`auto_ptr`和`shared_ptr`，使用`new []`分配内存时，不能使用它们。不使用`new`分配内存时，不能使用`auto_ptr`和`shared_ptr`；不使用`new`或`new []`分配内存时，不能使用`unique_ptr`
+* 很多STL算法都支持复制和赋值操作，这些操作可用于`shared_ptr`，但不能用于`unique_ptr`（编译器发出警告）和`auto_ptr`（行为不确定）
+* 在`unique_ptr`为右值时，可将其赋给`shared_ptr`，这与将一个`unique_ptr`赋给另一个需要满足的条件相同。模板`shared_ptr`包含一个显式构造函数，可用于将右值`unique_ptr`转换为`shared_ptr`。`shared_ptr`将接管原来归`unique_ptr`所有的对象
+* `vector`模板使用动态内存分配，因此可以用初始化参数来指出需要多少矢量
+* 
