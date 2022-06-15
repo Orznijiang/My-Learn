@@ -1920,6 +1920,130 @@
 
 ## 第15章 友元、异常和其他
 
+1. **下面建立友元的尝试有什么错误？**
+
+   1. ```
+      class snap
+      {
+      	friend clasp;
+      	...
+      };
+      class clasp {...};
+      ```
+
+      友元类声明缺少关键字`class`：`friend class clasp;`
+
+   2. ```
+      class cuff
+      {
+      	public:
+      		void snip(muff &) {...}
+      		...
+      };
+      
+      class muff
+      {
+      	friend void cuff::snip(muff &);
+      	...
+      };
+      ```
+
+      需要一个前向声明，以便编译器能够解释`void snip(muff &)`：
+
+      ```
+      class muff; // forward declaration
+      class cuff
+      {
+      	public:
+      		void snip(muff &) {...}
+      		...
+      };
+      
+      class muff
+      {
+      	friend void cuff::snip(muff &);
+      	...
+      };
+
+   3. ```
+      class muff
+      {
+      	friend void cuff::snip(muff &);
+      	...
+      };
+      
+      class cuff
+      {
+      	public:
+      		void snip(muff &) {...}
+      		...
+      };
+      ```
+
+      首先，`cuff`类声明应该在`muff`类之前，以便编译器可以理解`cuff::snip()`。其次，编译器需要`muff`的一个前向声明，以便可以理解`snip(muff &)`：
+
+      ```
+      class muff; // forward declaration
+      class cuff
+      {
+      	public:
+      		void snip(muff &) {...}
+      		...
+      };
+      
+      class muff
+      {
+      	friend void cuff::snip(muff &);
+      	...
+      };
+
+2. **您知道了如何建立相互类友元的方法。能够创建一种更为严格的友情关系，即类B只有部分成员是类A的友元，而类A只有部分成员是类B的友元吗？请解释原因。**
+
+   不能。为使类A拥有一个本身为类B的成员函数的友元，B的声明必须位于A的声明之前。一个前向声明是不够的，因为这种声明可以告诉A：B是一个类；但它不能指出类成员的名称。同样，如果B拥有一个本身为A的成员函数的友元，则这个A的声明必须位于B的声明之前。这两个要求是互斥的。
+
+3. **下面的嵌套类声明中可能存在什么问题？**
+
+   ```
+   class Ribs
+   {
+   	private:
+   		class Sauce
+   		{
+   			int soy;
+   			int suger;
+   			public:
+   				Sauce(int s1, int s2) : soy(s1), suger(s2) {}
+   		};
+   		...
+   };
+   ```
+
+   访问类的唯一方法是通过其公有接口，这意味着对于`Sauce`对象，只能调用构造函数来创建一个。其他成员（`soy`和`suger`）在默认情况下是私有的。
+
+4. **`throw`和`return`之间的区别何在？**
+
+   假设函数`f1()`调用函数`f2()`。`f2()`中的返回语句导致程序执行在函数`f1()`中调用`f2()`后面的一条语句。`throw`语句导致程序沿函数调用的当前序列回溯，直到找到直接或间接包含对`f2()`的调用的`try`语句块为止。它可能在`f1()`中、调用`f1()`的函数中或其他函数中。找到这样的`try`语句块后，将执行下一个匹配的`catch`语句块，而不是函数调用后的语句。
+
+5. **假设有一个从异常基类派生来的异常类层次结构，则应按什么样的顺序放置`catch`块？**
+
+   应按从子孙到祖先的顺序排列`catch`语句块。
+
+6. **对于本章定义的`Grand`、`Superb`和`Magnificant`类，假设`pg`为`Grand *`指针，并将其中某个类的对象的地址赋给了它，而`ps`为`Superb *`指针，则下面两个代码示例的行为有什么不同？**
+
+   ```
+   if (ps == dynamic_cast<Superb *>(pg))
+   	ps->say(); // sample #1
+   if (typeid(*pg) == typeid(Superb))
+   	(Superb *)pg->say(); // sample #2
+   ```
+
+   1. 对于示例#1，如果`pg`指向一个`Superb`对象或从`Superb`派生而来的任何类的对象，则`if`条件为`true`。具体地说，如果`pg`指向`Magnificant`对象，则`if`条件也为`true`
+   2. 对于示例#2，仅当指向`Superb`对象时，`if`条件才为`true`，如果指向的是从`Superb`派生出来的对象，则`if`条件不为`true`
+
+7. **`static_cast`运算符与`dynamic_cast`运算符有什么不同？**
+
+   `dynamic_cast`运算符只允许沿类层次结构向上转换，而`static_cast`运算符允许向上转换和向下转换。`static_cast`运算符还允许枚举类型和整型之间以及数值类型之间的转换。
+
 
 
 ### 笔记
