@@ -2232,9 +2232,165 @@
 
 ## 第17章 输入、输出和文件
 
+1. **`iostream`文件在C++ I/O中扮演何种角色？**
 
+   `iostream`文件定义了用于管理输入和输出的类、常量和操纵符，这些对象管理用于处理I/O的流和缓冲区。该文件还创建了一些标准对象（`cin`、`cout`、`cerr`和`clog`以及对应的宽字符对象），用于处理与每个程序相连的标准输入和输出流。
 
+2. **为什么键入数字（如121）作为输入要求程序进行转换？**
 
+   键盘输入生成一系列字符。输入121将生成3个字符，每个字符都由一个1字节的二进制码表示。要将这个值存储为`int`类型，则必须将这3个字符转换为121值的二进制表示。
+
+3. **标准输出与标准错误之间有什么区别？**
+
+   在默认情况下，标准输出和标准错误都将输出发送给标准输出设备（通常为显示器）。然而，如果要求操作系统将输出重定向到文件，则标准输出将与文件（而不是显示器）相连，但标准错误仍与显示器相连。
+
+4. **为什么在不为每个类型提供明确指示的情况下，`cout`仍能够显示不同的C++类型？**
+
+   `ostream`类为每种C++基本类型定义了一个`operator<<()`函数的版本。编译器将下面的表达式
+
+   ```
+   cout << spot
+   ```
+
+   解释为
+
+   ```
+   cout.operator<<(spot)
+   ```
+
+   这样，它便能够将该方法调用与具有相同参数类型的函数原型匹配。
+
+5. **输出方法的定义的哪一特征让您能够拼接输出？**
+
+   可以将返回`ostream &` 类型的输出方法拼接。这样，通过一个对象调用方法时，将返回该对象。然后，返回对象将可以调用序列中的下一个方法。
+
+6. **编写一个程序，要求用户输入一个整数，然后以十进制、八进制和十六进制显示该整数。在宽度为15个字符的字段中显示每种形式，并将它们显示在同一行上，同时使用C++数基前缀。**
+
+   ```
+   // rq17-6.cpp
+   #include <iostream>
+   #include <iomanip>
+   
+   int main()
+   {
+   	using namespace std;
+   	cout << "Enter an integer: ";
+   	int n;
+   	cin >> n;
+   	cout << setw(15) << "base ten"
+   		 << setw(15) << "base sixteen"
+   		 << setw(15) << "base eight" << "\n";
+   	cout.setf(ios::showbase); // or cout << showbase;
+   	cout << setw(15) << n << hex << setw(15) << n << oct << setw(15) << n << "\n";
+   	return 0;
+   }
+
+7. **编写一个程序，请求用户输入下面的信息，并按下面的格式显示它们：**
+
+   ```
+   Enter your name: Billy Gruff
+   Enter your hourly wages: 12
+   Enter number of hours worked: 7.5
+   First format:
+   				   Billy Gruff: $		12.00: 	7.5
+   Second format:
+   Billy Gruff					  : $12.00		 :7.5
+   ```
+
+   ```
+   // rq17-7.cpp
+   
+   #include <iostream>
+   #include <iomanip>
+   
+   int main()
+   {
+   	using namespace std;
+   	char name[20];
+   	float hourly;
+   	float hours;
+   	
+   	cout << "Enter your name: ";
+   	cin.get(name, 20).get();
+   	cout << "Enter your hourly wages: ";
+   	cin >> hourly;
+   	cout << "Enter number of hours worked: ";
+   	cin >> hours;
+   	
+   	cout.setf(ios::showpoint);
+   	cout.setf(ios::fixed, ios::floatfield);
+   	cout.setf(ios::right, ios::adjustfiled);
+   	// or cout << showpoint << fixed << right;
+   	cout << "First format:\n";
+   	cout << setw(30) << name << ": $" << setprecision(2)
+   		 << setw(10) << hourly << ":" << setprecision(1)
+   		 << setw(5) << hours << "\n";
+   	cout << "Second format:\n";
+   	cout.setf(ios::left, ios::adjustfield);
+   	cout << setw(30) << name << ": $" << setprecision(2)
+   		 << setw(10) << hourly << ":" << setprecision(1)
+   		 << setw(5) << hours << "\n";
+   	return 0;
+   }
+
+8. **对于下面的程序：**
+
+   ```
+   // rq17-8.cpp
+   #include <iostream>
+   
+   int main()
+   {
+   	using namespace std;
+   	char ch;
+   	int ct1 = 0;
+   	
+   	cin >> ch;
+   	while(ch != 'q')
+   	{
+   		ct1++;
+   		cin >> ch;
+   	}
+   	
+   	int ct2 = 0;
+   	cin.get(ch);
+   	while(ch != 'q')
+   	{
+   		ct2++;
+   		cin.get(ch);
+   	}
+   	cout << "ct1 = " << ct1 << "; ct2 = " << ct2 << "\n";
+   	
+   	return 0;
+   }
+   ```
+
+   **如果输入如下，该程序将打印什么内容？**
+
+   ```
+   I see a q<Enter>
+   I see a q<Enter>
+   ```
+
+   **其中，`<Enter>`表示回车键。**
+
+   ```
+   ct1 = 5; ct2 = 9
+   ```
+
+   该程序的前半部分忽略空格和换行符，而后半部分没有。注意，程序的后半部分从第一个q后面的换行符开始读取，将换行符计算在内。
+
+9. **下面的两条语句都读取并丢弃行尾之前的所有字符（包括行尾）。这两条语句的行为在哪方面不同？**
+
+   ```
+   // #1
+   while(cin.get() != '\n')
+   	continue;
+   // #2
+   cin.ignore(80, '\n');
+   ```
+   
+   如果输入行超过80个字符，`ignore()`将不能正常工作。在这种情况下，它将跳过前80个字符。
 
 
 
@@ -2257,3 +2413,4 @@
 * 文件的`is_open()`较新方法除了能够检测到`good()`能够检测到的错误，还能检测到——试图以不合适的文件模式打开文件时失败
 * `ios_base::out`本身将导致文件被截短，但与`ios_base::in`一起使用时，不会导致文件被截短。一些冲突的组合，如`ios_base::in|ios_base::trunc`，将禁止文件被打开，``is_open()``方法可以检测出这种故障
 * `ios_base::ate`和`ios_base::app`都将文件指针指向打开的文件尾。二者的区别在于，`ios_base::app`，模式只允许将数据添加到文件尾，而`ios_base::ate`模式将指针放到文件尾
+* setw()后面接一个控制符，如dec，会导致输出长度控制失效吗
