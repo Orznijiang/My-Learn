@@ -141,12 +141,19 @@
   <ItemGroup>
     <ClInclude Include="12-01-cow.h" />
     <ClInclude Include="12-02-string2.h" />
+    <ClInclude Include="12-03-stock.h" />
+    <ClInclude Include="12-04-stack.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="12-01-cow.cpp" />
     <ClCompile Include="12-01-main.cpp" />
     <ClCompile Include="12-02-main.cpp" />
     <ClCompile Include="12-02-string2.cpp" />
+    <ClCompile Include="12-03-main.cpp" />
+    <ClCompile Include="12-03-stock.cpp" />
+    <ClCompile Include="12-04-main.cpp" />
+    <ClCompile Include="12-04-stack.cpp" />
+    <ClCompile Include="12-05-06-no.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

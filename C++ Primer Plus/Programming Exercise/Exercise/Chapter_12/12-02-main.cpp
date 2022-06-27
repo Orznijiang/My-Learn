@@ -3,7 +3,7 @@
 using namespace std;
 #include "12-02-string2.h"
 
-int main() {
+int main02() {
 	String s1(" and I am a C++ student.");
 	String s2 = "Please enter your name: ";
 	String s3;

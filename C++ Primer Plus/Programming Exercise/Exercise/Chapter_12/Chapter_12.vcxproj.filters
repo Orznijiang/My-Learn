@@ -21,6 +21,12 @@
     <ClInclude Include="12-02-string2.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="12-03-stock.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="12-04-stack.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="12-01-cow.cpp">
@@ -33,6 +39,21 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="12-02-main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="12-03-stock.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="12-03-main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="12-04-stack.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="12-04-main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="12-05-06-no.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
