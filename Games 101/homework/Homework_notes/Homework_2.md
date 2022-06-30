@@ -61,10 +61,14 @@
 
     ![recorrection2](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20101/homework/homework_notes/hw2_recorrect2.png?raw=true "recorrection2")
 
+    * 其中，A、B、C为三角形的三个点，P表示要插值的点，Z表示投影变换前各点的深度值，而α、β、γ表示重心坐标，其中带有`'`的表示在屏幕空间的重心坐标，不带`'`的表示在投影变换前的重心坐标
+
+    * 由于之前的齐次除法将w分量也进行了除法操作，导致w分量恒为1。否则，就可以保留Z值用作后面的深度插值校正
+
   * 同时，在进行真正的深度测试时也不会使用线性的深度值，而是希望近处的深度值拥有更大的精度。所以，顶点的深度值会经过一定的处理，但是插值还是线性的
-
+  
   * 经验证，在本例中校正前后的深度值确实差别不大
-
+  
     ![校正前后深度值对比](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20101/homework/homework_notes/hw2_correction_vs.png?raw=true)
 
 注意：
