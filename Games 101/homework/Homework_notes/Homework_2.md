@@ -66,10 +66,6 @@
     * 由于之前的齐次除法将w分量也进行了除法操作，导致w分量恒为1。否则，就可以保留Z值用作后面的深度插值校正
 
   * 同时，在进行真正的深度测试时也不会使用线性的深度值，而是希望近处的深度值拥有更大的精度。所以，顶点的深度值会经过一定的处理，但是插值还是线性的
-  
-  * 经验证，在本例中校正前后的深度值确实差别不大
-  
-    ![校正前后深度值对比](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20101/homework/homework_notes/hw2_correction_vs.png?raw=true)
 
 注意：
 
