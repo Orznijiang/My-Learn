@@ -135,13 +135,12 @@ void rst::rasterizer::rasterize_triangle(const Triangle& t) {
 				//auto [alpha, beta, gamma] = computeBarycentric2D(i, j, t.v);
                 float w_reciprocal = alpha + beta + gamma;
 				float z_interpolated = alpha * v[0].z() + beta * v[1].z() + gamma * v[2].z();
-                float z_interpolated_correction = 1.0 / (alpha / v[0].z() + beta / v[1].z() + gamma / v[2].z());
 				//z_interpolated /= w_reciprocal;
 
                 // TODO : set the current pixel (use the set_pixel function) to the color of the triangle (use getColor function) if it should be painted.
-                if (z_interpolated_correction < depth_buf[get_index(i, j)]) {
-                    set_pixel(Eigen::Vector3f(i, j, z_interpolated_correction), t.getColor());
-                    depth_buf[get_index(i, j)] = z_interpolated_correction;//important!!! update depth buffer!!!
+                if (z_interpolated < depth_buf[get_index(i, j)]) {
+                    set_pixel(Eigen::Vector3f(i, j, z_interpolated), t.getColor());
+                    depth_buf[get_index(i, j)] = z_interpolated;//important!!! update depth buffer!!!
                 }
 			}
 		}
