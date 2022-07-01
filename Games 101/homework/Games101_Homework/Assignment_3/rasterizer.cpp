@@ -282,6 +282,7 @@ void rst::rasterizer::rasterize_triangle(const Triangle& t, const std::array<Eig
     auto v = t.v;
     auto normal = t.normal;
     auto texcoord = t.tex_coords;
+    auto color = t.color;
 
     Eigen::Vector2f min = Eigen::Vector2f(std::floor(std::min(std::min(t.v[0].x(), t.v[1].x()), t.v[2].x())), std::floor(std::min(std::min(t.v[0].y(), t.v[1].y()), t.v[2].y())));
     Eigen::Vector2f max = Eigen::Vector2f(std::floor(std::max(std::max(t.v[0].x(), t.v[1].x()), t.v[2].x())), std::floor(std::max(std::max(t.v[0].y(), t.v[1].y()), t.v[2].y())));
@@ -300,10 +301,17 @@ void rst::rasterizer::rasterize_triangle(const Triangle& t, const std::array<Eig
 
                 // TODO : set the current pixel (use the set_pixel function) to the color of the triangle (use getColor function) if it should be painted.
                 if (zp < depth_buf[get_index(i, j)]) {
-                    Eigen::Vector3f normalP = getInterpolateResult(normal[0], normal[1], normal[2]);
-                    Eigen::Vector2f texcoordP = getInterpolateResult(texcoord[0], texcoord[1], texcoord[2]);
-                    //set_pixel(Eigen::Vector3f(i, j, zp), normalP);
                     depth_buf[get_index(i, j)] = zp;//important!!! update depth buffer!!!
+
+                    Eigen::Vector3f interpolated_color = getInterpolateResult(color[0], color[1], color[2]);
+                    Eigen::Vector3f interpolated_normal = getInterpolateResult(normal[0], normal[1], normal[2]);
+                    Eigen::Vector2f interpolated_texcoords = getInterpolateResult(texcoord[0], texcoord[1], texcoord[2]);
+                    Eigen::Vector3f interpolated_shadingcoords = getInterpolateResult(view_pos[0], view_pos[1], view_pos[2]);
+
+                    fragment_shader_payload payload(interpolated_color, interpolated_normal.normalized(), interpolated_texcoords, texture ? &*texture : nullptr);
+                    payload.view_pos = interpolated_shadingcoords;
+                    auto pixel_color = fragment_shader(payload);
+                    set_pixel(Eigen::Vector2i(i, j), pixel_color);
                 }
             }
         }
