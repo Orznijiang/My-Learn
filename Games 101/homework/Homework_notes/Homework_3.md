@@ -40,11 +40,11 @@ auto getInterpolateResult = [&](auto& propA, auto& propB, auto& propC) -> auto {
 
 
 
-![image-20220701162552260](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20220701162552260.png)
+![image-20220701162552260](E:\My Documents\Github\MyImageBed\My-Learn\Games 101\homework\homework_notes\hw3_error1.png)
 
 set_pixel(Eigen::Vector3f(i, j, zp), Eigen::Vector3f(0,0,0));
 
-![image-20220701210113735](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20220701210113735.png)
+![image-20220701210113735](E:\My Documents\Github\MyImageBed\My-Learn\Games 101\homework\homework_notes\hw3_error2.png)
 
 Eigen::Vector3f deot = kd.cwiseProduct(light.intensity);
 
