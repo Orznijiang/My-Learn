@@ -289,7 +289,9 @@ void rst::rasterizer::rasterize_triangle(const Triangle& t, const std::array<Eig
     
     for (int i = min.x(); i < max.x() + 1; i++) {
         for (int j = min.y(); j < max.y() + 1; j++) {
+
             auto [alpha, beta, gamma] = computeBarycentric2D(i + 0.5, j + 0.5, t.v);
+
             if (alpha >= 0 && beta >= 0 && gamma >= 0) {
                 float Z = 1.0 / (alpha / v[0].w() + beta / v[1].w() + gamma / v[2].w());
 

@@ -112,7 +112,8 @@ Eigen::Vector3f texture_fragment_shader(const fragment_shader_payload& payload)
         // TODO: Get the texture value at the texture coordinates of the current fragment   
         float u = payload.tex_coords.x() - floor(payload.tex_coords.x());
         float v = payload.tex_coords.y() - floor(payload.tex_coords.y());
-        return_color = payload.texture->getColor(u, v);
+        //return_color = payload.texture->getColor(u, v);
+        return_color = payload.texture->getColorBilinear(u, v);
     }
     Eigen::Vector3f texture_color;
     texture_color << return_color.x(), return_color.y(), return_color.z();
@@ -340,9 +341,6 @@ Eigen::Vector3f bump_fragment_shader(const fragment_shader_payload& payload)
     // Vector ln = (-dU, -dV, 1)
     // Normal n = normalize(TBN * ln)
 
-    float u = payload.tex_coords.x() - floor(payload.tex_coords.x());
-    float v = payload.tex_coords.y() - floor(payload.tex_coords.y());
-    //auto n = payload.texture->getColor(u, v).normalized();
     auto n = normal.normalized();
     auto t = Eigen::Vector3f(
         n.x() * n.y() / sqrt(n.x() * n.x() + n.z() * n.z()),
@@ -355,17 +353,16 @@ Eigen::Vector3f bump_fragment_shader(const fragment_shader_payload& payload)
     //std::cout << payload.texture->getColor(u + 1 / tex_width, v) << std::endl << std::endl;
     //std::cout << payload.texture->getColor(u, v) << std::endl << std::endl;
     //std::cout << payload.texture->getColor(u, v + 1 / tex_height) << std::endl << std::endl;
+    float u = payload.tex_coords.x() - floor(payload.tex_coords.x());
+    float v = payload.tex_coords.y() - floor(payload.tex_coords.y());
     auto dU = kh * kn * (payload.texture->getColor(u + 1.0f / tex_width, v).norm() - payload.texture->getColor(u, v).norm());
     auto dV = kh * kn * (payload.texture->getColor(u, v + 1.0f / tex_height).norm() - payload.texture->getColor(u, v).norm());
-    //auto dU = kh * kn * 1 / tex_width;
-    //auto dV = kh * kn * 1 / tex_height;
     auto ln = Eigen::Vector3f(-dU, -dV, 1);
     auto tbn_mat = Eigen::Matrix3f();
     tbn_mat << t.x(), b.x(), n.x(),
         t.y(), b.y(), n.y(),
         t.z(), b.z(), n.z();
     auto nn = (tbn_mat * ln).normalized();
-   
 
     Eigen::Vector3f result_color = {0, 0, 0};
     result_color = nn;
