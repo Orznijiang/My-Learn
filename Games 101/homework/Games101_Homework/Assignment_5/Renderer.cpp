@@ -228,9 +228,15 @@ void Renderer::Render(const Scene& scene)
             // TODO: Find the x and y positions of the current pixel to get the direction
             // vector that passes through it.
             // Also, don't forget to multiply both of them with the variable *scale*, and
-            // x (horizontal) variable with the *imageAspectRatio*            
+            // x (horizontal) variable with the *imageAspectRatio*   
+            Vector2f origin{ -scale * imageAspectRatio, scale };
+            auto pixelSize = 2 * scale / scene.height;
+            x = origin.x + (i + 0.5) * pixelSize;
+            y = origin.y - (j + 0.5) * pixelSize;
 
             Vector3f dir = Vector3f(x, y, -1); // Don't forget to normalize this direction!
+            dir = normalize(std::move(dir));
+
             framebuffer[m++] = castRay(eye_pos, dir, scene, 0);
         }
         UpdateProgress(j / (float)scene.height);
