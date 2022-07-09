@@ -33,8 +33,16 @@ void Renderer::Render(const Scene& scene)
             //  vector that passes through it.
             // Also, don't forget to multiply both of them with the variable
             // *scale*, and x (horizontal) variable with the *imageAspectRatio*
-
+            Vector2f origin{ -scale * imageAspectRatio, scale };
+            auto pixelSize = 2 * scale / scene.height;
+            x = origin.x + (i + 0.5) * pixelSize;
+            y = origin.y - (j + 0.5) * pixelSize;
             // Don't forget to normalize this direction!
+            Vector3f dir = Vector3f(x, y, -1);
+            dir = normalize(std::move(dir));
+            Ray primary_ray{ eye_pos, dir };
+
+            framebuffer[m++] = scene.castRay(primary_ray, 0);
 
         }
         UpdateProgress(j / (float)scene.height);

@@ -232,8 +232,19 @@ inline Intersection Triangle::getIntersection(Ray ray)
     t_tmp = dotProduct(e2, qvec) * det_inv;
 
     // TODO find ray triangle intersection
+    if (t_tmp <= 0)
+        return inter;
 
+    auto getInterpolateResult = [&](auto& propA, auto& propB, auto& propC) -> auto {
+        return (1.0 - u - v) * propA + u * propB + v * propC;
+    };
 
+    inter.happened = true;
+    inter.distance = t_tmp;
+    inter.obj = this;
+    inter.m = this -> m;
+    inter.coords = std::move(getInterpolateResult(t0, t1, t2));
+    inter.normal = normal;
 
 
     return inter;
