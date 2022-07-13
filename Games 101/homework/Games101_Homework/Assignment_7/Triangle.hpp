@@ -261,8 +261,6 @@ inline Intersection Triangle::getIntersection(Ray ray)
     };
 
     inter.happened = true;
-
-
     inter.coords = std::move(getInterpolateResult(v0, v1, v2));
     inter.tcoords = std::move(getInterpolateResult(t0, t1, t2));
     inter.normal = normal;
