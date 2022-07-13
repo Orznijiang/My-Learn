@@ -7,12 +7,12 @@
 首先，或许需要修改模型文件的读取路径，取决于你的放置位置：
 
 ```c++
-MeshTriangle floor("../models/cornellbox/floor.obj", white);
-MeshTriangle shortbox("../models/cornellbox/shortbox.obj", white);
-MeshTriangle tallbox("../models/cornellbox/tallbox.obj", white);
-MeshTriangle left("../models/cornellbox/left.obj", red);
-MeshTriangle right("../models/cornellbox/right.obj", green);
-MeshTriangle light_("../models/cornellbox/light.obj", light);
+MeshTriangle floor("models/cornellbox/floor.obj", white);
+MeshTriangle shortbox("models/cornellbox/shortbox.obj", white);
+MeshTriangle tallbox("models/cornellbox/tallbox.obj", white);
+MeshTriangle left("models/cornellbox/left.obj", red);
+MeshTriangle right("models/cornellbox/right.obj", green);
+MeshTriangle light_("models/cornellbox/light.obj", light);
 ```
 
 
@@ -346,3 +346,10 @@ t_tmp = dotProduct(e2, qvec) * det_inv;
 ## 参考链接
 
 * 提高项-SAH划分：https://blog.csdn.net/ycrsw/article/details/124331686
+
+
+
+
+
+fr出现负值
+
