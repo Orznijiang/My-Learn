@@ -61,4 +61,61 @@ bool Scene::trace(
 Vector3f Scene::castRay(const Ray &ray, int depth) const
 {
     // TO DO Implement Path Tracing Algorithm here
+    if (depth > this->maxDepth) {
+        return Vector3f(0.0, 0.0, 0.0);
+    }
+    Intersection intersection = std::move(Scene::intersect(ray));
+    Material* m = intersection.m;
+    Object* hitObject = intersection.obj;
+    Vector3f hitColor = this->backgroundColor; // initialization
+    Vector2f uv;
+    uint32_t index = 0;
+    if (intersection.happened) {
+
+        auto saturate = [](auto num)->auto{
+            return num > 0 ? num : 0;
+        };
+
+        Vector3f hitPoint = intersection.coords;
+        Vector3f N = intersection.normal;
+        Vector2f st;
+        hitObject->getSurfaceProperties(hitPoint, ray.direction, index, uv, N, st);
+
+        Intersection light_pos;
+        float light_pdf;
+        sampleLight(light_pos, light_pdf);
+
+        Vector3f shadow_origin = (dotProduct(ray.direction, N) < 0) ?
+            hitPoint + N * EPSILON :
+            hitPoint - N * EPSILON;
+        Vector3f shadow_dir = std::move((light_pos.coords - hitPoint).normalized());
+        bool isBlocked = Scene::intersect(Ray(shadow_origin, shadow_dir)).happened;
+        Vector3f L_dir{};
+        if (!isBlocked) {
+            Vector3f f_r = m->eval(ray.direction, shadow_dir, N);
+            float cos_theta = saturate(dotProduct(N, shadow_dir));
+            float cos_theta_prime = saturate(dotProduct(light_pos.normal, -shadow_dir));
+            float distance2 = pow((light_pos.coords - hitPoint).norm(), 2);
+            L_dir = light_pos.emit * f_r * cos_theta * cos_theta_prime / distance2 / light_pdf;
+        }
+        Vector3f L_indir{};
+        float p = get_random_float();
+        //std::cout << "p: " << p << std::endl;
+        if (p < Scene::RussianRoulette) {
+            Vector3f wi_origin = (dotProduct(ray.direction, N) < 0) ?
+                hitPoint + N * EPSILON :
+                hitPoint - N * EPSILON;
+            Vector3f wi = m->sample(ray.direction, N);
+            Intersection intersect_wi = Scene::intersect(Ray(wi_origin, wi));
+            if (intersect_wi.m != nullptr && !intersect_wi.m->hasEmission()) {
+                Vector3f f_r = m->eval(ray.direction, wi, N);
+                float cos_theta = saturate(dotProduct(N, wi));
+                float pdf = m->pdf(ray.direction, wi, N);
+                L_indir = castRay(Ray(wi_origin, wi), depth + 1) * f_r * cos_theta / pdf / Scene::RussianRoulette;
+            }
+        }
+        std::cout << "dir: " << L_dir << "indir: " << L_indir << std::endl;
+        return L_dir + L_indir;
+    }
+    return hitColor;
 }
