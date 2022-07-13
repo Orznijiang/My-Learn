@@ -243,7 +243,11 @@ inline Intersection Triangle::getIntersection(Ray ray)
     inter.distance = t_tmp;
     inter.obj = this;
     inter.m = this -> m;
-    inter.coords = std::move(getInterpolateResult(t0, t1, t2));
+    //inter.coords = std::move(getInterpolateResult(t0, t1, t2));
+    inter.coords = std::move(getInterpolateResult(v0, v1, v2));
+    //std::cout << "\n";
+    //std::cout << "v: " << v0 << " " << v1 << " " << v2 << std::endl;
+    //std::cout << "t: " << t0 << " " << t1 << " " << t2 << std::endl;
     inter.normal = normal;
 
 
