@@ -1,8 +1,8 @@
 # Homework 7
 
-作业6的主要内容是在作业5实现的经典Whitted-Style Ray Tracing算法的基础上加入物体划分算法 Bounding Volume Hierarchy (BVH) ，使得求交的过程得到加速。该部分的知识集中在Lecture 13和Lecture 14中。
+之前的作业实现了 Whitted-Style Ray Tracing 算法，并且用 BVH 等加速结构对于求交过程进行了加速。作业7将在上一次实验的基础上（保留BVH加速结构）实现完整的 Path Tracing 算法。该部分的知识集中在Lecture 15和Lecture 16中。
 
-作业框架已经为我们提供了大部分的实现，包括BVH结构的递归构建。在理解框架的大部分实现后，我们所需要补充的代码为 Ray-Bounding Volume 求交过程与 BVH 的查找过程。同时需要迁移上个作业中自己实现的代码。
+作业框架已经为我们提供了大部分的实现，包括BVH结构的递归构建、采样方法、pdf计算以及BRDF系数计算的具体实现。在理解框架的大部分实现后，我们所需要补充的代码仅为 Path Tracing 算法过程中对每条射线Ray的递归处理过程，即`castRay(const Ray &ray, int depth)`函数。同时需要迁移上个作业中自己实现的代码。
 
 首先，或许需要修改模型文件的读取路径，取决于你的放置位置：
 
@@ -15,204 +15,81 @@ MeshTriangle right("models/cornellbox/right.obj", green);
 MeshTriangle light_("models/cornellbox/light.obj", light);
 ```
 
+注意到，这次的作业框架将光源视为Object，而不是使用单独的光源对象。我们后面需要根据Object材质的自发光属性来判断求交的结果是否是光源，即：
+
+```c++
+intersection.m->hasEmission();
+```
+
 
 
 ## 代码分析
 
-### global
-
-定义了整个框架会用到的一些基本函数和变量。
-
-### Vector
-
-由于本次作业框架不再使用Eigen库，因此提供了向量类的实现，并提供了完成作业所需要的向量操作，如点积（`dotProduct()`）、叉积（`crossProduct()`）、归一化（`normalize()`）等。
-
-### Object
-
-场景中所有渲染物体的基类，与作业5的框架不同，这里不再包含物体的材质信息。同时纯虚函数的数量也增加了：
-
-* `virtual bool intersect(const Ray& ray) = 0`
-  * 判断是否相交
-* `virtual bool intersect(const Ray& ray, float &, uint32_t &) const = 0`
-  * 判断是否相交，并将一些值传入引用参数
-* `virtual Intersection getIntersection(Ray _ray) = 0`
-  * 判断是否相交，并将返回一个`Intersection `对象（保存了交点信息）
-* `virtual void getSurfaceProperties(const Vector3f &, const Vector3f &, const uint32_t &, const Vector2f &, Vector3f &, Vector2f &) const = 0`
-  * 根据重心坐标等信息，计算出交点处的表面材质信息，传入引用参数
-* `virtual Vector3f evalDiffuseColor(const Vector2f &) const = 0`
-  * 返回漫反射颜色
-* `virtual Bounds3 getBounds() = 0`
-  * 返回物体的包围盒
-
-#### Sphere
-
-用于在场景中模拟球，继承自Object类。
-
-* 包含圆心、半径、半径平方和指向材质对象的指针
-* 实现所有纯虚函数
-
-
-
-与作业5的框架不同，这里声明了一个三角形类用于保存单个的三角形信息
-
-#### Triangle
-
-用于在场景中模拟三角形，继承自Object类。
-
-* 包含顶点坐标、边向量、纹理坐标、法线方向和指向材质对象的指针
-* 实现所有纯虚函数
-
-#### MeshTriangle
-
-用于在场景中模拟多个三角形组成的Mesh，继承自Object类（不是Triangle）。
-
-* 成员属性：
-  * `bounding_box`：该Mesh的包围盒
-  * `vertices`：顶点集合
-  * `numTriangles`：三角形数量
-  * `vertexIndex`：顶点索引
-  * `stCoordinates`：纹理坐标
-  * `triangles`：Triangle对象的容器
-  * `bvh`：指向该Mesh重建的BVH结构的root的指针
-  * `m`：指向材质对象的指针
-* 实现所有纯虚函数
-
-
-
-### Bounds3
-
-包围盒类，每个包围盒可由 pMin 和 pMax 两点描述。
-
-* `Bounds3::Union` 函数的作用是将两个包围盒并成更大的包围盒
-* 与材质一样，场景中的每个物体实例都有自己的包围盒
-
-### BVH
-
- BVH 加速类，本次作业的重点。
-
-* 场景 scene 拥有一个 BVHAccel 实例
-* 从根节点开始，我们可以递归地从物体列表构造场景的 BVH
-
-#### BVHBuildNode
-
-BVH结构的节点对象，包含
-
-* `bounds`：该节点的包围盒
-* `left`：该节点的左子节点指针，叶子结点为空
-* `right`：该节点的右子节点指针，叶子结点为空
-* `object`：该节点下的Object指针，非叶子结点为空
-
-在该是线下，每个叶子节点只指向一个模型。
-
-#### BVHAccel
-
-管理一个完整的BVH结构，保存一个根节点的指针以及指向所有Object物体的指针容器。下面介绍其中比较重要的函数实现。
-
-##### recursiveBuild()
-
-递归函数，对于一个保存Object物体的指针的容器：
-
-* 创建一个新的`BVHBuildNode`对象
-
-* 若容器内只剩下一个Object对象
-
-  * 该节点为叶子节点
-  * 左右子节点设为空指针
-  * object成员变量指针指向该对象
-  * 计算该对象的包围盒，赋给bounds成员变量
-
-* 若容器内有两个Object对象
-
-  * 该节点非叶子结点
-  * object指针为空指针
-  * 左右子节点分别为对两个Object对象指针递归调用recursiveBuild()的返回指针
-  * 包围盒为左右子节点的和
-
-* 若容器内有两个以上的Object对象
-
-  * 则需要使用算法将它们分成两部分
-
-  * 对于每一个Object对象的包围盒，计算出其包围盒的中心，以这些包围盒的中心坐标建立一个新的包围盒
-
-    ```c++
-    for (int i = 0; i < objects.size(); ++i)
-    	centroidBounds = Union(centroidBounds, objects[i]->getBounds().Centroid());
-    ```
-
-  * 确认上面生成的包围盒在XYZ哪个维度上的跨度最大，然后在该维度上，以每个Object对象的包围盒的中心为比较对象，对Object对象进行排序
-
-    ```c++
-    int dim = centroidBounds.maxExtent();
-    switch (dim) {
-    case 0:
-        std::sort(objects.begin(), objects.end(), [](auto f1, auto f2) {
-            return f1->getBounds().Centroid().x <
-                   f2->getBounds().Centroid().x;
-        });
-        break;
-    case 1:
-        std::sort(objects.begin(), objects.end(), [](auto f1, auto f2) {
-            return f1->getBounds().Centroid().y <
-                   f2->getBounds().Centroid().y;
-        });
-        break;
-    case 2:
-        std::sort(objects.begin(), objects.end(), [](auto f1, auto f2) {
-            return f1->getBounds().Centroid().z <
-                   f2->getBounds().Centroid().z;
-        });
-        break;
-    }
-    ```
-
-  * 将排序后的Object对象平分到两个容器中，分别作为递归调用recursiveBuild()的参数，将返回值分别赋给左右子节点
-
-    ```c++
-    auto beginning = objects.begin();
-    auto middling = objects.begin() + (objects.size() / 2);
-    auto ending = objects.end();
-    
-    auto leftshapes = std::vector<Object*>(beginning, middling);
-    auto rightshapes = std::vector<Object*>(middling, ending);
-    
-    node->left = recursiveBuild(leftshapes);
-    node->right = recursiveBuild(rightshapes);
-    ```
-
-  * 包围盒为左右子节点的和
-
-
-
-##### Intersect()
-
-从根节点开始调用getIntersection()函数，getIntersection()是一个递归函数，最终返回交点信息。
-
-##### getIntersection()
-
-对于每个node，递归调用其左子节点和右子节点，得到最终的交点并返回。该部分需要我们自己实现。
-
-
-
-### Light
-
-定义了一个基础的光源类。
-
-#### AreaLight
-
-定义了一个面光源，继承自Light类。
-
-
-
-### Renderer
-
-* 一个结构体`hit_payload`，定义了 Ray 与 物体 的交点应保存的信息
-* Renderer类，其中的`Render()`函数实现了对参数`scene`的光线追踪渲染，并将结果保存到图片中
-
-#### Render()
-
-* 根据`width`和`height`声明一个名为`framebuffer`的向量数组，用于保存计算结果。`width`和`height`可视为要生成图片的水平方向的像素数量和竖直方向的像素数量
-* 遍历每个像素，生成一条射线，调用`castRay()`方法，使其开始在场景里进行tracing，存储返回的颜色。生成Primary Ray的过程需要我们完成
-* 将`framebuffer`的内容保存到图片中
+由于本次作业框架与上次作业框架高度重合，这里仅对增加的且使用到或者有修改的部分进行解释。重复的代码分析参考上一篇文章。
+
+### Material
+
+每个物体实例都可以拥有自己的材质对象成员。
+
+成员变量分析：
+
+* m_type：表示材质的类型。在本次作业中，仅有一种材质类型，即漫反射：
+
+```C++
+enum MaterialType { DIFFUSE};
+```
+
+* m_emission：描述材质的自发光属性，可以使用`hasEmission()`函数判断这个成员变量的值是否不为0，若是则说明在本作业框架中这是一个光源
+
+成员函数分析：
+
+* `toWorld(const Vector3f &a, const Vector3f &N)`：字面意思上理解，是将传入的向量a转换到世界坐标系下。实际上，我们认为作业框架中的法线方向（N）都是默认处于世界坐标系下的，该方法以向量N为基础，计算出一对与N垂直且相互正交的向量用作正交基（与作业3中tbn矩阵的思想一样）。此时，这3个向量的坐标即为从 **由这3个向量组成的空间** 转换到 **世界空间** 后这三个基向量在 **世界空间** 中的位置。使用这3个向量组成的矩阵对某个向量进行变换，就是将这个向量的坐标看作原本处于 **这三个基向量组成的空间** 中，然后对其进行变换，将其变换到 **世界空间** 中的对应坐标，即：`return a.x * B + a.y * C + a.z * N;`
+
+```c++
+Vector3f B, C;
+if (std::fabs(N.x) > std::fabs(N.y)){
+    float invLen = 1.0f / std::sqrt(N.x * N.x + N.z * N.z);
+    C = Vector3f(N.z * invLen, 0.0f, -N.x *invLen);
+}
+else {
+    float invLen = 1.0f / std::sqrt(N.y * N.y + N.z * N.z);
+    C = Vector3f(0.0f, N.z * invLen, -N.y *invLen);
+}
+B = crossProduct(C, N);
+return a.x * B + a.y * C + a.z * N;
+```
+
+* `sample(const Vector3f &wi, const Vector3f &N)`：按照材质的性质，给定入射方向与法向量，用某种分布采样一个出射方向。由于场景中仅存在漫反射材质，出射方向即为在半球上随机进行采样。其中`get_random_float()`函数返回一个0~1之间的浮点值。
+  * 生成2个0~1的随机数x1，x2
+  * 根据x1计算z分量，为-1~1之间的随机浮点值
+  * 根据z值以及总长度（1）计算出另外2个分量的平方和的根
+  * 根据x2计算弧度phi，范围为0~2π，即为一个圆的弧度
+  * 根据phi值即平方和的根计算剩下2个分量
+  * 调用上面的`toWorld()`函数，得到世界空间下的采样方向
+
+```c++
+// uniform sample on the hemisphere
+float x_1 = get_random_float(), x_2 = get_random_float();
+float z = std::fabs(1.0f - 2.0f * x_1);
+float r = std::sqrt(1.0f - z * z), phi = 2 * M_PI * x_2;
+Vector3f localRay(r*std::cos(phi), r*std::sin(phi), z);
+return toWorld(localRay, N);
+```
+
+* `pdf(const Vector3f &wi, const Vector3f &wo, const Vector3f &N)`：给定一对入射、出射方向与法向量，计算 sample 方法得到该出射方向的概率密度。由于场景中仅存在漫反射材质，sample方法为在半球上均匀采样，则可以计算出pdf值即为1/半球的面积，相关理论可参考Lecture 15
+
+```c++
+// uniform sample probability 1 / (2 * PI)
+if (dotProduct(wo, N) > 0.0f)
+    return 0.5f / M_PI;
+else
+    return 0.0f;
+break;
+```
+
+* `eval(const Vector3f &wi, const Vector3f &wo, const Vector3f &N)`：给定一对入射、出射方向与法向量，计算这种情况下的 f_r 值。由于场景中仅存在漫反射材质，该材质的 f_r 值为Kd/π，引入1/π是为了保证能量的守恒，具体的推导过程可参考Lecture 17
+
+![f_r_diffuse](E:\Backup Folder\LiHaoyu\github\MyImageBed\My-Learn\Games 101\homework\homework_notes\hw7_f_r_diffuse.png)
 
 
 
@@ -224,9 +101,11 @@ BVH结构的节点对象，包含
 
   * 相机渲染相关的`width`、`height`、`fov`等
 
-  * 两个容器，用于保存场景中的物体和灯光信息
+  * 两个容器，用于保存场景中的物体和灯光信息。实际上本次作业框架中将灯光也当做一个物体来处理
 
   * Ray Tracing 递归的最大深度
+
+  * 新增：俄罗斯轮盘（RussianRoulette）的概率
 
   * ……
 
@@ -235,34 +114,76 @@ BVH结构的节点对象，包含
   * `Intersection intersect(const Ray& ray) const`：与scene的bvh求交
   * ……
 
+* `sampleLight(Intersection &pos, float &pdf) const`：在场景的所有光源上按面积 uniform 地 sample 一个点，并计算该 sample 的概率密度。算法首先遍历场景中的所有光源（实际上场景中只有一个光源）并计算出光源面积的和，然后使用随机数的方法取到一个随机的光源，对这个光源进行采样。即，随机取到该光源上的一个点，返回Intersection信息，并计算pdf概率密度的值（面积的倒数）：
+
+  ```c++
+  float emit_area_sum = 0;
+  for (uint32_t k = 0; k < objects.size(); ++k) {
+      if (objects[k]->hasEmit()){
+          emit_area_sum += objects[k]->getArea();
+      }
+  }
+  float p = get_random_float() * emit_area_sum;
+  emit_area_sum = 0;
+  for (uint32_t k = 0; k < objects.size(); ++k) {
+      if (objects[k]->hasEmit()){
+          emit_area_sum += objects[k]->getArea();
+          if (p <= emit_area_sum){
+              objects[k]->Sample(pos, pdf);
+              break;
+          }
+      }
+  }
+  ```
+
+    * 需要注意的是，对于MeshTriangle对象的采样，会使用到BVH的加速。由于对里面的单个三角形进行采样时会将pdf设置为该三角形面积的倒数，而对MeshTriangle对象来说正确的是整体面积的倒数，所以BVH的Node存储了该Node的面积，以抵消单个三角形进行采样时对pdf值的修改
+
+    * 此外，在采样时对部分随机数做了根号处理，我不是十分理解，懂的老哥可以解答下：
+
+      ```C++
+      // BVHAccel::Sample(Intersection &pos, float &pdf)
+      float p = std::sqrt(get_random_float()) * root->area;
+      
+      // Triangle::Sample(Intersection &pos, float &pdf)
+      float x = std::sqrt(get_random_float()), y = get_random_float();
+      pos.coords = v0 * (1.0f - x) + v1 * (x * (1.0f - y)) + v2 * (x * y);
 
 
-### Ray
 
-定义了一条射线，包含一条光的源头、方向、传递时间 t 和范围 range。
 
-### OBJ_Loader
+### global
 
-用于OBJ格式模型文件的导入。
+定义了整个框架会用到的一些基本函数和变量。
 
-### Material
+`get_random_float()`：用于生成0~1的随机浮点数。由于每次调用都会创建临时的变量，然后又销毁，而这个函数被调用的次数又特别巨大，因此造成了很大的性能损失。可以将变量修改为静态类型，放在函数外部，内部直接调用，这样就不用重复地创建和销毁：
 
-将上个作业框架中Object类的材质参数拆分到了一个单独的类中，现在每个物体实例都可以拥有自己的材质。
+```c++
+static std::random_device dev;
+static std::mt19937 rng(dev());
+static std::uniform_real_distribution<float> dist(0.f, 1.f);
+
+inline float get_random_float()
+{
+    return dist(rng);
+}
+```
+
+
 
 ### Intersection
 
 定义了Ray和模型相交的交点的信息。
 
+相对于作业6，本次作业Intersection对象的成员变量有所增加，下面是每个成员变量的解释：
 
-
-## Primary Ray的生成
-
-可以直接使用我们上个作业中的实现（如果实现正确的话），也可以使用框架中为提前我们计算出来的x、y坐标。需要注意的是一些接口较上个作业框架有了改动，我们需要先创建一个Ray对象，再调用scene的castRay()方法：
-
-```c++
-Ray primary_ray{ eye_pos, dir };
-framebuffer[m++] = scene.castRay(primary_ray, 0);
-```
+* happened：是否产生（符合要求的）交点
+* coords：插值的顶点坐标
+* tcoords：插值的纹理坐标
+* normal：法线方向
+* emit：材质的自发光颜色
+* distance：射线的传播距离，即t值
+* obj：指向交点所在Object的指针
+* m：指向交点材质的指针
 
 
 
@@ -297,17 +218,6 @@ t_tmp = dotProduct(e2, qvec) * det_inv;
 
 此外，我们还需要获取相交物体的一些信息，用于Intersection对象的赋值。
 
-相对于作业6，本次作业Intersection对象的成员变量有所增加，下面是每个成员变量的解释：
-
-* happened：是否产生（符合要求的）交点
-* coords：插值的顶点坐标
-* tcoords：插值的纹理坐标
-* normal：法线方向
-* emit：材质的自发光颜色
-* distance：射线的传播距离，即t值
-* obj：指向交点所在Object的指针
-* m：指向交点材质的指针
-
 
 
 ## Ray与Bounding Volume的求交判断
@@ -322,7 +232,7 @@ t_tmp = dotProduct(e2, qvec) * det_inv;
 
 由于Ray是射线，我们还需要保证离开平面的t值中的最小值大于0，这样才说明射线真正有存在于Bounding Volume中的部分。
 
-注意检查 t_enter = t_exit 的时候的判断是否正确。
+注意检查 t_enter = t_exit 的时候的判断是否正确。由于场景中部分三角形（比如光源）的平面完全与某个轴垂直，这会导致其AABB在某个轴上的最小值和最大值相等，因此计算出的t_enter = t_exit也相等。在这个作业中，我们需要将相等的情况视为存在交点。
 
 
 
@@ -337,6 +247,10 @@ t_tmp = dotProduct(e2, qvec) * det_inv;
 
 
 
+
+
+
+
 ## 参考运行结果
 
 ![result](https://github.com/Orznijiang/My-Learn/blob/main/Games%20101/homework/Games101_Homework/Assignment_6/binary.png?raw=true)
@@ -345,7 +259,8 @@ t_tmp = dotProduct(e2, qvec) * det_inv;
 
 ## 参考链接
 
-* 提高项-SAH划分：https://blog.csdn.net/ycrsw/article/details/124331686
+* https://blog.csdn.net/weixin_43485513/article/details/122779134?spm=1001.2014.3001.5506
+* https://blog.csdn.net/qq_41835314/article/details/125166417?spm=1001.2101.3001.6650
 
 
 
