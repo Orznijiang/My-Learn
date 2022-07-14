@@ -67,7 +67,7 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const
     Intersection intersection = std::move(Scene::intersect(ray));
     Material* m = intersection.m;
     Object* hitObject = intersection.obj;
-    Vector3f hitColor = this->backgroundColor; // initialization
+    Vector3f hitColor = Vector3f(0.0, 0.0, 0.0); // initialization
     Vector2f uv;
     uint32_t index = 0;
     if (intersection.happened) {
@@ -81,6 +81,10 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const
         Vector2f st;
         hitObject->getSurfaceProperties(hitPoint, ray.direction, index, uv, N, st);
 
+        if (intersection.m->hasEmission()) {
+            return intersection.m->getEmission();
+        }
+
         Intersection light_pos;
         float light_pdf;
         sampleLight(light_pos, light_pdf);
@@ -89,7 +93,9 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const
             hitPoint + N * EPSILON :
             hitPoint - N * EPSILON;
         Vector3f shadow_dir = std::move((light_pos.coords - hitPoint).normalized());
-        bool isBlocked = Scene::intersect(Ray(shadow_origin, shadow_dir)).happened;
+        // need to judge, because light is also a object in this frame
+        auto block_test = Scene::intersect(Ray(shadow_origin, shadow_dir));
+        bool isBlocked = block_test.happened && !block_test.m->hasEmission();
         Vector3f L_dir{};
         if (!isBlocked) {
             Vector3f f_r = m->eval(ray.direction, shadow_dir, N);
@@ -107,14 +113,15 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const
                 hitPoint - N * EPSILON;
             Vector3f wi = m->sample(ray.direction, N);
             Intersection intersect_wi = Scene::intersect(Ray(wi_origin, wi));
-            if (intersect_wi.m != nullptr && !intersect_wi.m->hasEmission()) {
+            if (intersect_wi.happened && !intersect_wi.m->hasEmission()) {
                 Vector3f f_r = m->eval(ray.direction, wi, N);
                 float cos_theta = saturate(dotProduct(N, wi));
                 float pdf = m->pdf(ray.direction, wi, N);
                 L_indir = castRay(Ray(wi_origin, wi), depth + 1) * f_r * cos_theta / pdf / Scene::RussianRoulette;
             }
         }
-        std::cout << "dir: " << L_dir << "indir: " << L_indir << std::endl;
+        //std::cout << "dir: " << L_dir << "indir: " << L_indir << std::endl;
+        //注意pdf接近0的情况，这时候就会引入白色噪点，作业说明里有说的
         return L_dir + L_indir;
     }
     return hitColor;
