@@ -111,7 +111,7 @@ Vector3f Scene::castRay(const Ray &ray, int depth) const
                 Vector3f f_r = mat->eval(wo, wi, N);
                 float cos_theta = saturate(dotProduct(N, wi));
                 float pdf = mat->pdf(wo, wi, N);
-                L_indir = castRay(Ray(p, wi), depth + 1) * f_r * cos_theta / pdf / Scene::RussianRoulette;
+                L_indir = castRay(Ray(block_test_origin, wi), depth + 1) * f_r * cos_theta / pdf / Scene::RussianRoulette;
             }
         }
         //std::cout << "dir: " << L_dir << "indir: " << L_indir << std::endl;
