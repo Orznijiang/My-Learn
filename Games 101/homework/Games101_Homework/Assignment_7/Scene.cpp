@@ -61,68 +61,70 @@ bool Scene::trace(
 Vector3f Scene::castRay(const Ray &ray, int depth) const
 {
     // TO DO Implement Path Tracing Algorithm here
-    if (depth > this->maxDepth) {
-        return Vector3f(0.0, 0.0, 0.0);
-    }
+    //if (depth > this->maxDepth) {
+    //    return Vector3f(0.0, 0.0, 0.0);
+    //}
+
+    Vector3f result = Vector3f{ 0.0,0.0,0.0 };
+
     Intersection intersection = std::move(Scene::intersect(ray));
-    Material* m = intersection.m;
-    Object* hitObject = intersection.obj;
-    Vector3f hitColor = Vector3f(0.0, 0.0, 0.0); // initialization
-    Vector2f uv;
-    uint32_t index = 0;
+
+
+    //Material* m = intersection.m;
+    //Object* hitObject = intersection.obj;
+    //Vector3f hitColor = Vector3f(0.0, 0.0, 0.0); // initialization
+    //Vector2f uv;
+    //uint32_t index = 0;
     if (intersection.happened) {
 
         auto saturate = [](auto num)->auto{
             return num > 0 ? num : 0;
         };
 
-        Vector3f hitPoint = intersection.coords;
-        Vector3f N = intersection.normal;
-        Vector2f st;
-        hitObject->getSurfaceProperties(hitPoint, ray.direction, index, uv, N, st);
+        auto mat = intersection.m;
 
-        if (intersection.m->hasEmission()) {
-            return intersection.m->getEmission();
+        if (mat->hasEmission() && depth == 0) {
+            return mat->getEmission();
         }
 
         Intersection light_pos;
         float light_pdf;
         sampleLight(light_pos, light_pdf);
 
-        Vector3f shadow_origin = (dotProduct(ray.direction, N) < 0) ?
-            hitPoint + N * EPSILON :
-            hitPoint - N * EPSILON;
-        Vector3f shadow_dir = std::move((light_pos.coords - hitPoint).normalized());
+        Vector3f p = intersection.coords;
+        Vector3f N = intersection.normal;
+        Vector3f wo = ray.direction;        // view to p
+
+        Vector3f x = light_pos.coords;
+        Vector3f NN = light_pos.normal;
+        Vector3f ws = (p - x).normalized(); // light to p
+        
+        Vector3f block_test_origin = (dotProduct(wo, N) < 0) ? p + N * EPSILON : p - N * EPSILON;
+        auto block_test = Scene::intersect(Ray(block_test_origin, -ws));
         // need to judge, because light is also a object in this frame
-        auto block_test = Scene::intersect(Ray(shadow_origin, shadow_dir));
         bool isBlocked = block_test.happened && !block_test.m->hasEmission();
-        Vector3f L_dir{};
+
+        Vector3f L_dir{ 0.0 };
         if (!isBlocked) {
-            Vector3f f_r = m->eval(ray.direction, shadow_dir, N);
-            float cos_theta = saturate(dotProduct(N, shadow_dir));
-            float cos_theta_prime = saturate(dotProduct(light_pos.normal, -shadow_dir));
-            float distance2 = pow((light_pos.coords - hitPoint).norm(), 2);
+            Vector3f f_r = mat->eval(wo, -ws, N);
+            float cos_theta = saturate(dotProduct(N, -ws));
+            float cos_theta_prime = saturate(dotProduct(NN, ws));
+            float distance2 = pow((x - p).norm(), 2);
             L_dir = light_pos.emit * f_r * cos_theta * cos_theta_prime / distance2 / light_pdf;
         }
-        Vector3f L_indir{};
-        float p = get_random_float();
-        //std::cout << "p: " << p << std::endl;
-        if (p < Scene::RussianRoulette) {
-            Vector3f wi_origin = (dotProduct(ray.direction, N) < 0) ?
-                hitPoint + N * EPSILON :
-                hitPoint - N * EPSILON;
-            Vector3f wi = m->sample(ray.direction, N);
-            Intersection intersect_wi = Scene::intersect(Ray(wi_origin, wi));
+        Vector3f L_indir{ 0.0 };
+        if (get_random_float() < Scene::RussianRoulette) {
+            Vector3f wi = mat->sample(wo, N).normalized();
+            Intersection intersect_wi = Scene::intersect(Ray(block_test_origin, wi));
             if (intersect_wi.happened && !intersect_wi.m->hasEmission()) {
-                Vector3f f_r = m->eval(ray.direction, wi, N);
+                Vector3f f_r = mat->eval(wo, wi, N);
                 float cos_theta = saturate(dotProduct(N, wi));
-                float pdf = m->pdf(ray.direction, wi, N);
-                L_indir = castRay(Ray(wi_origin, wi), depth + 1) * f_r * cos_theta / pdf / Scene::RussianRoulette;
+                float pdf = mat->pdf(wo, wi, N);
+                L_indir = castRay(Ray(p, wi), depth + 1) * f_r * cos_theta / pdf / Scene::RussianRoulette;
             }
         }
         //std::cout << "dir: " << L_dir << "indir: " << L_indir << std::endl;
-        //注意pdf接近0的情况，这时候就会引入白色噪点，作业说明里有说的
-        return L_dir + L_indir;
+        result = L_dir + L_indir;
     }
-    return hitColor;
+    return result;
 }
