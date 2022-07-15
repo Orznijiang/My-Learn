@@ -61,20 +61,11 @@ bool Scene::trace(
 Vector3f Scene::castRay(const Ray &ray, int depth) const
 {
     // TO DO Implement Path Tracing Algorithm here
-    //if (depth > this->maxDepth) {
-    //    return Vector3f(0.0, 0.0, 0.0);
-    //}
 
     Vector3f result = Vector3f{ 0.0,0.0,0.0 };
 
     Intersection intersection = std::move(Scene::intersect(ray));
 
-
-    //Material* m = intersection.m;
-    //Object* hitObject = intersection.obj;
-    //Vector3f hitColor = Vector3f(0.0, 0.0, 0.0); // initialization
-    //Vector2f uv;
-    //uint32_t index = 0;
     if (intersection.happened) {
 
         auto saturate = [](auto num)->auto{
