@@ -89,7 +89,7 @@ break;
 
 * `eval(const Vector3f &wi, const Vector3f &wo, const Vector3f &N)`：给定一对入射、出射方向与法向量，计算这种情况下的 f_r 值。由于场景中仅存在漫反射材质，该材质的 f_r 值为Kd/π，引入1/π是为了保证能量的守恒，具体的推导过程可参考Lecture 17
 
-![f_r_diffuse](E:\Backup Folder\LiHaoyu\github\MyImageBed\My-Learn\Games 101\homework\homework_notes\hw7_f_r_diffuse.png)
+![f_r_diffuse](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20101/homework/homework_notes/hw7_f_r_diffuse.png?raw=true)
 
 
 
@@ -247,13 +247,73 @@ t_tmp = dotProduct(e2, qvec) * det_inv;
 
 
 
+## Path Tracing 过程的递归实现
+
+根据Lecture 16以及作业文档中给出的伪代码，可以较容易地写出 Path Tracing 算法的过程，下面简要讲述流程，并指出需要注意的点：
+
+* 首先，令Ray与场景中的物体求交，得到交点intersection
+
+* 若存在交点
+
+  * 判断交点处是否为光源，由于光源也是一个Object对象，因此需要判断其是否有emission属性。若我们的primary ray直射到了光源（即depth = 0），则表示由摄像机可直接看到光源，因此直接返回光源颜色
+
+    ```
+    if (mat->hasEmission() && depth == 0) {
+        return mat->getEmission();
+    }
+    ```
+
+    实际上不需要判断depth的值，因为除了primary ray的求交，后面的ray在递归调用castRay之前，都会提前判断该ray是否与光源相交，若与光源相交则停止tracing，因此后面的ray不会再与光源相交。
+
+  * 尝试计算L_dir：
+
+    调用`sampleLight()`函数对光源进行采样，得到光源上随机一点x的信息和概率密度函数值
+
+    * 创建一条从交点p射向光源点x的射线，判断交点是否为光源
+      * 若不是光源，则说明光源被其他物体挡住，无法照亮交点p
+      * 若未被挡住，则计算各种量，得到直接光的L值
+        * f_r：`mat->eval(wo, -ws, N)`
+        * cosθ：`saturate(dotProduct(N, -ws))`
+        * cosθ‘：`saturate(dotProduct(NN, ws))`
+        * distance^2^：`pow((x - p).norm(), 2)`
+        * L_dir：`light_pos.emit * f_r * cos_theta * cos_theta_prime / distance2 / light_pdf`
+        * 其中p表示射线交点，wo表示射线方向（view to p），ws表示光源方向（light to p），N表示交点的法线方向，x表示光源上采样到的点的位置，NN表示光源上x点的法线方向
+        * 有几点需要注意：
+          * ws的方向，计算cosθ时以交点p为基准点，而计算cosθ‘时以光源上的点x为基准点，二者计算时的ws方向相反
+          * 对于cos值的计算，要确保结果大于或等于0，因为不能从背面照亮物体
+
+  * 尝试计算L_indir：
+
+    调用`get_random_float()`函数获得一个0~1的随机数，与Scene::RussianRoulette进行比较
+
+    * 若未通过比较，则不投射光线
+    * 若通过了比较，则
+      * 对半球进行采样得到一个随机方向wi（漫反射均匀分布）
+      * 调用`intersect()`函数对场景中的物体进行求交
+      * 若交点不是光源，才继续进行计算
+        * 对上面的方向，递归调用`castRay()`函数，得到返回值
+        * 计算f_r：`mat->eval(wo, wi, N)`
+        * 计算cos_theta：`saturate(dotProduct(N, wi))`
+        * 计算pdf：`mat->pdf(wo, wi, N)`
+        * 计算L_indir：`castRay(Ray(p, wi), depth + 1) * f_r * cos_theta / pdf / Scene::RussianRoulette`
+
+  * 返回`L_dir + L_indir`
+
 
 
 
 
 ## 参考运行结果
 
-![result](https://github.com/Orznijiang/My-Learn/blob/main/Games%20101/homework/Games101_Homework/Assignment_6/binary.png?raw=true)
+ssp=16：
+
+![binary16](https://github.com/Orznijiang/My-Learn/blob/main/Games%20101/homework/Games101_Homework/Assignment_7/binary16.png?raw=true)
+
+
+
+ssp=256：
+
+![binary256](https://github.com/Orznijiang/My-Learn/blob/main/Games%20101/homework/Games101_Homework/Assignment_7/binary256.png?raw=true)
 
 
 
@@ -261,10 +321,3 @@ t_tmp = dotProduct(e2, qvec) * det_inv;
 
 * https://blog.csdn.net/weixin_43485513/article/details/122779134?spm=1001.2014.3001.5506
 * https://blog.csdn.net/qq_41835314/article/details/125166417?spm=1001.2101.3001.6650
-
-
-
-
-
-fr出现负值
-
