@@ -27,6 +27,12 @@
     <ClInclude Include="13-02-classic-dynamic.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="13-03-dma.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="13-04-port.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="13-01-main.cpp">
@@ -45,6 +51,18 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="13-02-main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="13-03-dma.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="13-03-main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="13-04-port.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="13-04-main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

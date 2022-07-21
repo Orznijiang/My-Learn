@@ -143,6 +143,8 @@
     <ClInclude Include="13-01-classic.h" />
     <ClInclude Include="13-02-cd-dynamic.h" />
     <ClInclude Include="13-02-classic-dynamic.h" />
+    <ClInclude Include="13-03-dma.h" />
+    <ClInclude Include="13-04-port.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="13-01-cd.cpp" />
@@ -151,6 +153,10 @@
     <ClCompile Include="13-02-cd-dynamic.cpp" />
     <ClCompile Include="13-02-classic-dynamic.cpp" />
     <ClCompile Include="13-02-main.cpp" />
+    <ClCompile Include="13-03-dma.cpp" />
+    <ClCompile Include="13-03-main.cpp" />
+    <ClCompile Include="13-04-main.cpp" />
+    <ClCompile Include="13-04-port.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

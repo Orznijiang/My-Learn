@@ -2,7 +2,7 @@
 using namespace std;
 #include "13-02-classic-dynamic.h" // which will contain #include cd.h
 void Bravo(const Cd_dynamic& disk);
-int main() {
+int main02() {
 	Cd_dynamic c1("Beatles", "Capitol", 14, 35.5);
 	Classic_dynamic c2 = Classic_dynamic("Piano Sonata in B flat, Fantasia in C",
 		"Alfred Brendel", "Philips", 2, 57.17);
