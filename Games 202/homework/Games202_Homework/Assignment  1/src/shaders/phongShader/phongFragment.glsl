@@ -24,6 +24,8 @@ varying highp vec3 vNormal;
 #define PI 3.141592653589793
 #define PI2 6.283185307179586
 
+#define LIGHT_WIDTH 20.0
+
 uniform sampler2D uShadowMap;
 
 varying vec4 vPositionFromLight;
@@ -89,7 +91,8 @@ float findBlocker( sampler2D shadowMap,  vec2 uv, float zReceiver ) {
     float block_num = 0.0;
     float block_depth = 0.0;
     for(int i = 0; i < BLOCKER_SEARCH_NUM_SAMPLES; i++){
-      vec2 uv_bias = poissonDisk[i] * 15.0 / 2048.0;
+      vec2 uv_bias = poissonDisk[i] * zReceiver * 0.1;
+      //vec2 uv_bias = poissonDisk[i] * 40.0 / 2048.0;//过小时，使得blocker和receiver距离较大的模型的软阴影边界明显
       float shadowDepth = unpack(texture2D(shadowMap, uv + uv_bias));
       if(zReceiver > shadowDepth + EPS){
         block_num++;
@@ -125,11 +128,11 @@ float PCSS(sampler2D shadowMap, vec4 coords){
   }
 
   // STEP 2: penumbra size
-  float light_width = 80.0;
-  float penumbra = (coords.z - avgBlocker) * light_width / avgBlocker;
+  //float light_width = 20.0;
+  float penumbra = (coords.z - avgBlocker) * LIGHT_WIDTH / avgBlocker;
 
   // STEP 3: filtering 
-  return PCF(shadowMap, coords, penumbra);
+  return PCF(shadowMap, coords, penumbra + 2.5);
 }
 
 
