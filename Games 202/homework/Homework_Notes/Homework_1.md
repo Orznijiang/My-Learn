@@ -1,0 +1,255 @@
+# Homework 1
+
+作业1的内容主要是实现实时渲染管线中的阴影计算，包括经典的Two Pass Shadow Map 方法产生的硬阴影，以及PCF(Percentage Closer Filter) 和PCSS(Percentage Closer Soft Shadow)的软阴影实现。该部分的知识集中在Lecture 03和Lecture 04中。
+
+作业框架已经为我们提供了大部分的实现，作业的主要内容将集中在 shader 内函数的完善上：
+
+* 对于场景中的每个物体都会默认附带一个 ShadowMaterial 材质，并会在调用 loadOBJ 时添加到 WebGLRenderer 的 shadowMeshes[] 中。当光源参数hasShadowMap 为 true 时，作业框架将开启 Shadow Map 功能，在正式渲染场景之前会以 ShadowMaterial 材质先渲染一遍 shadowMeshes[] 中的物体，从而生成我们需要的 ShadowMap。在 engine.js 中，可以看到创建了一个开启 ShadowMap 的方向光：
+
+  ![turn on shadowmap](E:\My Documents\Github\MyImageBed\My-Learn\Games 202\homework_notes\hw1_shadowmap_on.png)
+
+* ShadowMaterial 将使用 Shader/shadowShader 文件夹下的顶点和片元着色器。实现该材质的重点是要向 ShadowVertex.glsl 传递正确的 uLightMVP变量
+
+* 在正确实现 Shadow Map 之后，实现 PCF、PCSS 的主要工作将集中在 glsl的编写上
+
+关于作业框架的基本解读，可查阅下方的参考链接。
+
+
+
+## 光源的变换矩阵实现
+
+要得到一张 Shadow Map ，我们需要以光源的位置对场景进行渲染，从而得到一张深度图。在 ShadowMaterial.js 中需要向 Shader 传递正确的 uLightMVP 矩阵，其调用了 light 中的 CalcLightMVP 函数。因此，我们首先需要完成 DirectionalLight 中的 CalcLightMVP(translate, scale) 函数，它会在 ShadowMaterial 中被调用，返回光源处的 MVP 矩阵从而完成参数传递过程。
+
+实际上，Shadow Map 的绘制，就相当于将一个摄像机摆在光源的位置，朝向光源的方向，根据需求确定渲染的范围，然后对场景进行渲染，得到在该位置的每个像素上的最近点的深度值。
+
+这里涉及到了矩阵的计算，作业框架中使用了glMatrix库，这是 JavaScript 针对 WebGL 的矩阵向量库，其接口文档可查阅下方参考链接。
+
+
+
+### 模型矩阵
+
+一般的模型矩阵由缩放矩阵、旋转矩阵、位移矩阵依次构成。这里我们注意到 MeshRender.js 中的 bindCameraParameters 函数，其模型矩阵的构建先调用位移方法，再调用缩放方法，没有调用旋转方法：
+
+```javascript
+// Model transform
+mat4.identity(modelMatrix);
+mat4.translate(modelMatrix, modelMatrix, this.mesh.transform.translate);
+mat4.scale(modelMatrix, modelMatrix, this.mesh.transform.scale);
+```
+
+实际上，这里的矩阵计算将变换矩阵放在右边，相当于每次调用都在右边添加一个变换，最终对向量进行变换时，越右边的矩阵越早进行计算，因此，这里实际上的顺序还是先缩放，再位移。
+
+根据上面的写法，我们使用传入的 translate 和 scale 参数构建 light 的模型矩阵：
+
+```javascript
+// Model transform
+mat4.identity(modelMatrix);
+mat4.translate(modelMatrix, modelMatrix, translate);
+mat4.scale(modelMatrix, modelMatrix, scale);
+```
+
+
+
+### 观察矩阵
+
+光源包含 lightPos、focalPoint、lightUp 3个成员变量，我们可以使用这3个变量构建出观察矩阵，即将光源视为一个摄像机进行处理。这里，我们可以直接调用glMatrix库提供的接口：
+
+```javascript
+// View transform
+mat4.identity(viewMatrix);
+mat4.lookAt(viewMatrix, this.lightPos, this.focalPoint, this.lightUp);
+```
+
+lookAt 方法根据这3个信息构建出从当前坐标系转换到观察坐标系的矩阵，其构建过程在下方参考链接给出。
+
+
+
+### 投影矩阵
+
+投影包括正交投影和透视投影，这里推荐使用正交投影，因为这样可以保证场景深度信息在坐标系转换中保持线性关系从而便于之后的使用。正交投影的参数（width、height、near、far等）决定了 Shadow Map 所覆盖的范围，这个范围是由我们自己决定的，过小的范围会导致阴影被截断，过大的范围会导致精度的降低，因此需要合理选择。
+
+这里，我们依旧调用glMatrix库提供的接口：
+
+```javascript
+// Projection transform
+mat4.identity(projectionMatrix);
+mat4.ortho(projectionMatrix, -120, 120, -120, 120, 0.1, 500);
+```
+
+接口参数解析：
+
+```
+// Generates a orthogonal projection matrix with the given bounds
+(static) ortho(out, left, right, bottom, top, near, far) → {mat4}
+```
+
+| Name     | Type   | Description                              |
+| :------- | :----- | :--------------------------------------- |
+| `out`    | mat4   | mat4 frustum matrix will be written into |
+| `left`   | number | Left bound of the frustum                |
+| `right`  | number | Right bound of the frustum               |
+| `bottom` | number | Bottom bound of the frustum              |
+| `top`    | number | Top bound of the frustum                 |
+| `near`   | number | Near bound of the frustum                |
+| `far`    | number | Far bound of the frustum                 |
+
+
+
+这样，我们就完成了 lightMVP 矩阵的构建。
+
+
+
+## Shadowmap 绘制
+
+在绘制 Shadow Map 以及正常的渲染中，我们都会使用到上面的 lightMVP 矩阵。其中，shadow pass 的实现已经在作业框架中提供。
+
+### vert
+
+直接使用 lightMVP 矩阵对顶点进行变换：
+
+```glsl
+gl_Position = uLightMVP * vec4(aVertexPosition, 1.0);
+```
+
+### frag
+
+这里使用到了 gl_FragCoord.z，你可以理解为当前片元的深度值，且范围在 0 ~ 1 之间，值越大表示深度越深，同时由于我们的投影矩阵是正交矩阵，这个深度值是线性的。具体关于这个值的含义可以查阅下方的参考链接。
+
+这里，我们调用 pack 函数将深度的 float 值包装入输出的4个通道中：
+
+```glsl
+vec4 pack (float depth) {
+    // 使用rgba 4字节共32位来存储z值,1个字节精度为1/256
+    const vec4 bitShift = vec4(1.0, 256.0, 256.0 * 256.0, 256.0 * 256.0 * 256.0);
+    const vec4 bitMask = vec4(1.0/256.0, 1.0/256.0, 1.0/256.0, 0.0);
+    // gl_FragCoord:片元的坐标,fract():返回数值的小数部分
+    vec4 rgbaDepth = fract(depth * bitShift); //计算每个点的z值
+    rgbaDepth -= rgbaDepth.gbaa * bitMask; // Cut off the value which do not fit in 8 bits
+    return rgbaDepth;
+}
+
+void main(){
+  gl_FragColor = pack(gl_FragCoord.z);
+}
+```
+
+这样，光源的深度信息就被输出到了一张纹理中。
+
+
+
+## 利用 Shadowmap 绘制阴影
+
+在正常的渲染 pass 中，我们对 Shadow Map 采样，将采样的结果与当前片元的深度进行比较，从而判断当前的片元是否处于阴影中。
+
+### vert
+
+对顶点进行常规的 MVP 矩阵变换，同时还需要使用 lightMVP 矩阵进行变换，计算以光源为视点的坐标，并传递到片元着色器中，使得其能在片元着色器中与 Shadow Map 的采样值进行比较：
+
+```
+gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * vec4(aVertexPosition, 1.0);
+vPositionFromLight = uLightMVP * vec4(aVertexPosition, 1.0);
+```
+
+
+
+### frag
+
+main() 中已经为我们定义好了一些接口：
+
+```glsl
+float visibility;
+//visibility = useShadowMap(uShadowMap, vec4(shadowCoord, 1.0));
+//visibility = PCF(uShadowMap, vec4(shadowCoord, 1.0), 5.0);
+visibility = PCSS(uShadowMap, vec4(shadowCoord, 1.0));
+vec3 phongColor = blinnPhong();
+gl_FragColor = vec4(phongColor * visibility, 1.0);
+//gl_FragColor = vec4(phongColor, 1.0);
+```
+
+通过调用计算阴影的函数，我们得到一个表示可见性的 float 值，使用这个值对 Blinn-Phong 的光照结果进行影响，得到包含阴影的光照结果。其中 uShadowMap 即为我们在 shadow pass 中计算出来的 ShadowMap 纹理，shadowCoord 用于对 ShadowMap 进行采样和比较深度。
+
+首先，需要将 vPositionFromLight 的坐标范围映射到 0 ~ 1 之间，因为纹理采样的坐标范围是 0 ~ 1 ，Shadowmap 中存储的纹理深度范围也是 0 ~ 1 ：
+
+```glsl
+vec3 shadowCoord = ((vPositionFromLight.xyz / vPositionFromLight.w) + 1.0) / 2.0;
+```
+
+这里的齐次除法可有可无，因为正交投影理论上w值恒为1.0。vPositionFromLight处于正交投影后的裁剪坐标系中，坐标范围为 -1.0 ~ 1.0 ，上面的计算将其范围缩限到 0 ~ 1 。
+
+
+
+#### 硬阴影
+
+硬阴影的实现需要我们完善 phongFragment.glsl 中的 useShadowMap 函数。该函数负责查询当前着色点在 ShadowMap 上记录的深度值，并与转换到 light space 的深度值比较后返回 visibility 项。请注意，使用的查询坐标需要先转换到 NDC 标准空间 [0,1]。
+
+作业框架提供了 unpack 接口，用于从纹理信息中还原深度信息：
+
+```glsl
+float unpack(vec4 rgbaDepth) {
+    const vec4 bitShift = vec4(1.0, 1.0/256.0, 1.0/(256.0*256.0), 1.0/(256.0*256.0*256.0));
+    return dot(rgbaDepth, bitShift);
+}
+```
+
+我们首先使用片元在 light space 中的坐标对 ShadowMap 采样，并调用 unpack  函数得到存储的深度值。然后，通过将该深度值与当前片元在 light space 中的深度值进行比较，来判断可见性（硬阴影的可见性非0即1）：
+
+```glsl
+vec4 packedShadowDepth = texture2D(shadowMap, shadowCoord.xy).rgba;
+float shadowDepth = unpack(packedShadowDepth);
+if(shadowCoord.z > shadowDepth){
+  return 0.0;
+}
+return 1.0;
+```
+
+##### 参考运行结果
+
+![2p_result_no_bias](E:\My Documents\Github\MyImageBed\My-Learn\Games 202\homework_notes\hw1_2p_result_no_bias.png)
+
+可以观察到，在阴影的边界处（特别是光线方向与顶点法线方向夹角较大的情况下）容易出现阴影瑕疵（shadow acne），这是由于 ShadowMap 的精度问题（采样率低）而产生的自遮挡（self occlusion）现象，在Lecture 03中有相关的论述。我们可以引入 bias 来对阴影纹理的采样值进行一定程度的偏移来处理自遮挡问题，但这种处理方式同样会产生新的问题，即漏光现象。关于 shadow bias 的进一步论述可参考下面的文章。
+
+![2p_result_with_bias](E:\My Documents\Github\MyImageBed\My-Learn\Games 202\homework_notes\hw1_2p_result_with_bias.png)
+
+
+
+#### PCF(Percentage Closer Filtering)
+
+需要完善 phongFragment.glsl 中的 PCF(sampler2D shadowMap, vec4
+shadowCoord, float filterSize) 函数。我们推荐在一个圆盘滤波核中进行随
+机采样，采用这种方案的原因是可以简化后续PCSS Shader 的编写同时可以使软阴影上模糊的部分更显圆润自然，计算出来的伴影直径可与单位圆盘上的采样点
+相乘生成 ShadowMap 上的采样坐标（值得注意的是随机采样函数的质量将与最
+终渲染效果的好坏息息相关，我们在框架中提供了泊松圆盘采样和均匀圆盘采样
+两种采样函数，替换使用对比一下两种采样函数的细微区别，我们也鼓励使用其
+他的采样方法）
+
+
+
+
+
+### 替换原框架中的默认材质
+
+将框架中原来使用的 Material 替换为我们编写好的 PhongMaterial 类。将 load 文件夹中 loadOBJ.js 的下列代码删除（第 40-56 行，该部分 代码只负责创建物体默认基础材质，即表面基础颜色属性，其使用的默认 Shader 不负责高光和环境光着色。除此之外，为了支持无纹理贴图的材质，我们加上了 一点逻辑判断以特殊处理）。
+
+将删除的代码替换成下列代码，这会创建并使用之前新建的 PhongMaterial 实例：
+
+```javascript
+let myMaterial = new PhongMaterial(mat.color.toArray(), colorMap, mat.specular.toArray(), renderer.lights[0].entity.mat.intensity);
+```
+
+
+
+### 参考运行结果
+
+至此，Phong 着色模型的应用就算完成了。如果严格按照上述步骤，此时刷新网页你应该可以看到我们的模型能够与光源进行有趣的交互，并有着不错的光影效果。
+
+![result](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20202/homework_notes/hw0_result.png?raw=true)
+
+
+
+## 参考链接
+
+* [1] 代码框架分析：https://blog.csdn.net/qq_41835314/article/details/125619239
+* [2] glMatrix：[JSDoc: Module: mat4 (glmatrix.net)](https://glmatrix.net/docs/module-mat4.html)
+* [3] LookAt：https://learnopengl-cn.github.io/01%20Getting%20started/09%20Camera/
+* [4] gl_FragCoord：https://zhuanlan.zhihu.com/p/102068376
+* [5] shadow bias：https://zhuanlan.zhihu.com/p/370951892
