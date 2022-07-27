@@ -186,12 +186,15 @@ void main(void) {
 
   float visibility;
   //visibility = useShadowMap(uShadowMap, vec4(shadowCoord, 1.0));
-  visibility = PCF(uShadowMap, vec4(shadowCoord, 1.0), 5.0);
-  //visibility = PCSS(uShadowMap, vec4(shadowCoord, 1.0));
+  //visibility = PCF(uShadowMap, vec4(shadowCoord, 1.0), 5.0);
+  visibility = PCSS(uShadowMap, vec4(shadowCoord, 1.0));
 
   vec3 phongColor = blinnPhong();
+  vec3 ambient = 0.20 * pow(texture2D(uSampler, vTextureCoord).rgb, vec3(2.2));
 
-  gl_FragColor = vec4(phongColor * visibility, 1.0);
+  gl_FragColor = vec4(phongColor * visibility + ambient, 1.0);
+  //gl_FragColor = vec4(phongColor * visibility, 1.0);
+  //gl_FragColor = vec4(findBlocker(uShadowMap, shadowCoord.xy, shadowCoord.z));
   //gl_FragColor = vec4(phongColor, 1.0);
   //gl_FragColor = (vPositionFromLight + 1.0) / 2.0;
   //gl_FragColor = vec4(unpack(texture2D(uShadowMap, shadowCoord.xy)));
