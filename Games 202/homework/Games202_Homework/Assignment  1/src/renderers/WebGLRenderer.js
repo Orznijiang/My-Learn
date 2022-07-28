@@ -30,13 +30,34 @@ class WebGLRenderer {
 
         for (let l = 0; l < this.lights.length; l++) {
             // Draw light
+
+            // Handle light
+            const timer = Date.now() * 0.00025;
+            let lightPos = [ Math.sin(timer * 2) * 80, 
+            80, 
+            Math.cos(timer * 2) * 80 ];
+            
             // TODO: Support all kinds of transform
-            this.lights[l].meshRender.mesh.transform.translate = this.lights[l].entity.lightPos;
+            //this.lights[l].meshRender.mesh.transform.translate = this.lights[l].entity.lightPos;
+            this.lights[l].meshRender.mesh.transform.translate = lightPos;
             this.lights[l].meshRender.draw(this.camera);
+            this.lights[l].entity.lightPos = lightPos;
 
             // Shadow pass
             if (this.lights[l].entity.hasShadowMap == true) {
+                gl.bindFramebuffer(gl.FRAMEBUFFER, this.lights[l].entity.fbo);
+                gl.clearColor(0.0, 0.0, 0.0, 1.0);
+                gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+                console.log(this.lights[l].entity.fbo);
                 for (let i = 0; i < this.shadowMeshes.length; i++) {
+                    let Translation = this.shadowMeshes[i].mesh.transform.translate;
+					let Scale = this.shadowMeshes[i].mesh.transform.scale;                   
+                    let lightMVP = this.lights[l].entity.CalcLightMVP(Translation, Scale);          
+                    this.shadowMeshes[i].material.uniforms.uLightMVP = { type: 'matrix4fv', value: lightMVP };
+                    //console.log(this.shadowMeshes[i].material.uniforms.uLightMVP);
+                    //console.log(this.shadowMeshes.length);
+                    
+                    
                     this.shadowMeshes[i].draw(this.camera);
                 }
             }
@@ -45,6 +66,12 @@ class WebGLRenderer {
             for (let i = 0; i < this.meshes.length; i++) {
                 this.gl.useProgram(this.meshes[i].shader.program.glShaderProgram);
                 this.gl.uniform3fv(this.meshes[i].shader.program.uniforms.uLightPos, this.lights[l].entity.lightPos);
+
+                let Translation = this.meshes[i].mesh.transform.translate;
+                let Scale = this.meshes[i].mesh.transform.scale;
+                let lightMVP = this.lights[l].entity.CalcLightMVP(Translation, Scale);
+                this.meshes[i].material.uniforms.uLightMVP = { type: 'matrix4fv', value: lightMVP };
+
                 this.meshes[i].draw(this.camera);
             }
         }
