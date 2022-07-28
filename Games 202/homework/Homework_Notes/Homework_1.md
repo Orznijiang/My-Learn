@@ -6,7 +6,7 @@
 
 * 对于场景中的每个物体都会默认附带一个 ShadowMaterial 材质，并会在调用 loadOBJ 时添加到 WebGLRenderer 的 shadowMeshes[] 中。当光源参数hasShadowMap 为 true 时，作业框架将开启 Shadow Map 功能，在正式渲染场景之前会以 ShadowMaterial 材质先渲染一遍 shadowMeshes[] 中的物体，从而生成我们需要的 ShadowMap。在 engine.js 中，可以看到创建了一个开启 ShadowMap 的方向光：
 
-  ![turn on shadowmap](E:\Backup Folder\LiHaoyu\github\MyImageBed\My-Learn\Games 202\homework_notes\hw1_shadowmap_on.png)
+  ![turn on shadowmap](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20202/homework_notes/hw1_shadowmap_on.png?raw=true)
 
 * ShadowMaterial 将使用 Shader/shadowShader 文件夹下的顶点和片元着色器。实现该材质的重点是要向 ShadowVertex.glsl 传递正确的 uLightMVP变量
 
@@ -204,11 +204,11 @@ return 1.0;
 
 ##### 参考运行结果
 
-![2p_result_no_bias](E:\Backup Folder\LiHaoyu\github\MyImageBed\My-Learn\Games 202\homework_notes\hw1_2p_result_no_bias.png)
+![2p_result_no_bias](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20202/homework_notes/hw1_2p_result_no_bias.png?raw=true)
 
 可以观察到，在阴影的边界处（特别是光线方向与顶点法线方向夹角较大的情况下）容易出现阴影瑕疵（shadow acne），这是由于 ShadowMap 的精度问题（采样率低）而产生的自遮挡（self occlusion）现象，在Lecture 03中有相关的论述。我们可以引入 bias 来对阴影纹理的采样值进行一定程度的偏移来处理自遮挡问题，但这种处理方式同样会产生新的问题，即漏光现象，一些本应处于阴影中的位置被意外地照亮了。关于 shadow bias 的进一步论述可参考下面的文章。
 
-![2p_result_with_bias](E:\Backup Folder\LiHaoyu\github\MyImageBed\My-Learn\Games 202\homework_notes\hw1_2p_result_with_bias.png)
+![2p_result_with_bias](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20202/homework_notes/hw1_2p_result_with_bias.png?raw=true)
 
 
 
@@ -216,7 +216,7 @@ return 1.0;
 
 PCF 的实现需要我们完善 phongFragment.glsl 中的 PCF 函数。区别于硬阴影，其总体思路为对采样点周围的一片区域进行采样，计算顶点被这些采样点遮挡的总体数量，再除以采样点的数量，作为该点被遮挡的程度系数。因此，它不是一个非0即1的数，而是一个浮点数。
 
-作业框架推荐在一个圆盘滤波核中进行随机采样，采用这种方案的原因是可以简化后续PCSS Shader 的编写同时可以使软阴影上模糊的部分更显圆润自然，计算出来的伴影直径可与单位圆盘上的采样点相乘生成 ShadowMap 上的采样坐标。
+作业框架推荐在一个圆盘滤波核中进行随机采样，采用这种方案的原因是可以简化后续PCSS Shader 的编写同时可以使软阴影上模糊的部分更显圆润自然，计算出来的半影直径可与单位圆盘上的采样点相乘生成 ShadowMap 上的采样坐标。
 
 值得注意的是随机采样函数的质量将与最终渲染效果的好坏息息相关，作业框架中提供了泊松圆盘采样和均匀圆盘采样两种采样函数，替换使用对比一下两种采样函数的细微区别，参考链接中给出了两种采样方式的可视化展示。在实际的使用中，确实是泊松圆盘采样的效果更好一些。
 
@@ -287,9 +287,9 @@ return 1.0 - blocker / float(NUM_SAMPLES);
 
 ##### 参考运行结果
 
-![PCF：radius=5.0](E:\Backup Folder\LiHaoyu\github\MyImageBed\My-Learn\Games 202\homework_notes\hw1_PCF_5.png)
+![PCF：radius=5.0](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20202/homework_notes/hw1_PCF_5.png?raw=true)
 
-![PCF：radius=25.0](E:\Backup Folder\LiHaoyu\github\MyImageBed\My-Learn\Games 202\homework_notes\hw1_PCF_25.png)
+![PCF：radius=25.0](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20202/homework_notes/hw1_PCF_25.png?raw=true)
 
 可以看到，阴影的质量有了比较大的提升，同时采样数量与阴影质量的关系也比较大。
 
@@ -299,7 +299,11 @@ return 1.0 - blocker / float(NUM_SAMPLES);
 
 PCSS 的实现需要我们完善 phongFragment.glsl 中的 findBlocker 和 PCSS 函数。
 
-###### findBlocker
+作业文档注释：请注意，为了使本轮工作的重心放在算法的核心实现上，诸如光源宽度、采样数之类的参数可以通过 #define 直接定义使用。同时请保证使用的数据具有统一标架，而不是简单的套用公式。
+
+
+
+##### avgblocker depth
 
 其中， findBlocker 函数中需要我们完成对遮挡物平均深度的计算。首先，还是调用采样函数，生成一系列的采样点。然后遍历数组，对于每一个偏移的 uv 坐标采样到的深度，若其产生了遮挡，则进行计数。最终计算得到被遮挡的平均深度。
 
@@ -307,37 +311,80 @@ PCSS 的实现需要我们完善 phongFragment.glsl 中的 findBlocker 和 PCSS 
 
 同时，uv 偏移半径的选择对最终的结果也非常重要。由于远处的物体更容易被遮挡，当选择固定的较小的 radius 值时，其对距离光源较远的顶点进行平均遮挡深度的计算可能无法很好的表现出其被遮挡的程度（因为光源实际上是有一定形状的，而不是理想的无体积点，距离光源越远，光源的不同部分就越有可能被遮挡，从而无法对该点的照明做出贡献）。
 
-![small blocker](E:\Backup Folder\LiHaoyu\github\MyImageBed\My-Learn\Games 202\homework_notes\hw1_small_blocker.png)
+![small blocker](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20202/homework_notes/hw1_small_blocker.png?raw=true)
 
 在采样数较多的情况下，这种缺陷会被放大，较小的 radius 会导致距离光源较远处的阴影边缘处的过渡很生硬，这正是因为较小的采样半径使得距离光源较远处的顶点采样时的平均遮挡深度过渡很生硬（可以类比模糊操作，使用较小的卷积核对边缘锐利处的模糊作用并不明显），下面是出现上面这种问题时的平均遮挡深度的可视化：
 
-![blocker_visualization](E:\Backup Folder\LiHaoyu\github\MyImageBed\My-Learn\Games 202\homework_notes\hw1_blocker_visualization.png)
+![blocker_visualization](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20202/homework_notes/hw1_blocker_visualization.png?raw=true)
 
-过大的 radius 同样存在问题，即平均遮挡深度无法准确表示，使得点周围的平均遮挡深度相似，计算出的半影相似，无法表现出距离越远阴影越模糊的效果。
+这种剧烈的平均遮挡深度的变化会导致计算的半影直径的剧烈变化，从而导致最后的 PCF 采样半径在边缘处的突变，从而使边缘处的阴影过渡生硬。
 
+然而，过大的 radius 同样存在问题，即计算出的平均遮挡深度无法准确表示该点的被遮挡情况，顶点周围的平均遮挡深度相似，从而导致计算出的半影直径相似，无法表现出距离越远阴影越模糊的效果。
 
+因此，我们考虑使用自适应的采样半径 radius，将 radius 与光源宽度、视锥体宽度关联起来，这里的光源宽度、视锥体宽度都是自定义的值，其中视锥体的宽度就是我们正交投影所使用的截面体的宽度。顶点距离光源越远，其在 Shadowmap 上的成像范围就越大，应使用更大的采样半径，反之则使用更小的采样半径，如下图所示：
 
+![optimize_avg_depth](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20202/homework_notes/hw1_optimize_avg_depth.png?raw=true)
 
+据此，可以得到采样 uv 的偏移公式：
 
-接着就可以在 PCSS 函数中调用 findBlocker 函数，利用相似三角形计算伴影直径并传递给 PCF 函数以调整其滤波核大小。（请注意，为了使本轮工作的重心放在算法的核心实现上，诸如光源宽度、采样数之类的参数可以通过 #define 直接定义使用。同时请 保证使用的数据具有统一标架，而不是简单的套用公式，要保证使用公式的具有 物理意义否则将酌情扣分）。
+```glsl
+vec2 uv_bias = poissonDisk[i] * zReceiver * LIGHT_WIDTH / CAMERA_WIDTH / 2.0;
+```
 
-
-
-
-
-
-
-
-
-### 参考运行结果
-
-至此，Phong 着色模型的应用就算完成了。如果严格按照上述步骤，此时刷新网页你应该可以看到我们的模型能够与光源进行有趣的交互，并有着不错的光影效果。
-
-![result](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20202/homework_notes/hw0_result.png?raw=true)
+其中 2.0 是调整最终计算结果的一个 trick。
 
 
 
-很多情况下出现条状瑕疵，排除自遮挡问题后依旧存在，可能浮点计算的精度问题
+##### penumbra size
+
+根据前面计算出来的平均遮挡深度，我们可以利用相似三角形的性质计算出半影直径：
+
+![penumbra_size](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20202/homework_notes/hw1_penumbra_size.png?raw=true)
+
+在 Lecture 03 中有比较详细的讲解，这里不再解释。
+
+
+
+##### filtering
+
+这里实际上就是做一次 PCF ，只不过 PCF 的偏移 uv 不再固定，而是根据上面计算出来的半影直径动态地调整，距离遮挡点越远的顶点，使用越大的偏移半径。由于这部分的代码与 PCF 的计算完全相同，我们可以对 PCF 函数的接口稍作修改，然后直接进行调用：
+
+```glsl
+float PCF(sampler2D shadowMap, vec4 coords, float radius) {
+  // ......
+}
+float PCSS(sampler2D shadowMap, vec4 coords){
+
+  // STEP 1: avgblocker depth
+  // ......
+
+  // STEP 2: penumbra size
+  // ......
+
+  // STEP 3: filtering 
+  return PCF(shadowMap, coords, penumbra + 2.0);
+}
+```
+
+这里我将计算出的 penumbra 加上一个常数半径，避免在较近处出现硬阴影的自遮挡瑕疵。
+
+
+
+##### 参考运行结果
+
+![result_PCSS](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20202/homework_notes/hw1_result_PCSS.png?raw=true)
+
+可以看到，在遮挡点距离顶点较近时阴影较锐意，反之则较模糊。
+
+
+
+![add_ambient](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20202/homework_notes/hw1_add_ambient.png?raw=true)
+
+在最终结果下加入环境光照明，避免阴影处全黑。
+
+
+
+很多情况下最终渲染出现条状瑕疵，排除自遮挡问题后依旧存在，可能是浮点计算的精度问题。
 
 
 
@@ -349,3 +396,6 @@ PCSS 的实现需要我们完善 phongFragment.glsl 中的 findBlocker 和 PCSS 
 * [4] gl_FragCoord：https://zhuanlan.zhihu.com/p/102068376
 * [5] shadow bias：https://zhuanlan.zhihu.com/p/370951892
 * [6] [Sampling function (codepen.io)](https://codepen.io/arkhamwjz/pen/MWbqJNG?editors=1010)
+* [7] https://games-cn.org/forums/topic/yigeguanyuzuoyeyiwenti/
+* [8] https://games-cn.org/forums/topic/zuoye1dezhengjiaojuzhencanshudeyihuo/
+* [9] https://blog.csdn.net/qq_41835314/article/details/125726339?spm=1001.2014.3001.5502
