@@ -33,9 +33,9 @@ class WebGLRenderer {
 
             // Handle light
             const timer = Date.now() * 0.00025;
-            let lightPos = [ Math.sin(timer * 2) * 80, 
-            80, 
-            Math.cos(timer * 2) * 80 ];
+            let lightPos = [ Math.sin(timer * 2) * 100, 
+            100, 
+            Math.cos(timer * 2) * 100 ];
             
             // TODO: Support all kinds of transform
             //this.lights[l].meshRender.mesh.transform.translate = this.lights[l].entity.lightPos;
@@ -46,9 +46,9 @@ class WebGLRenderer {
             // Shadow pass
             if (this.lights[l].entity.hasShadowMap == true) {
                 gl.bindFramebuffer(gl.FRAMEBUFFER, this.lights[l].entity.fbo);
-                gl.clearColor(0.0, 0.0, 0.0, 1.0);
+                gl.clearColor(1.0, 1.0, 1.0, 1.0);
                 gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-                console.log(this.lights[l].entity.fbo);
+                //console.log(this.lights[l].entity.fbo);
                 for (let i = 0; i < this.shadowMeshes.length; i++) {
                     let Translation = this.shadowMeshes[i].mesh.transform.translate;
 					let Scale = this.shadowMeshes[i].mesh.transform.scale;                   

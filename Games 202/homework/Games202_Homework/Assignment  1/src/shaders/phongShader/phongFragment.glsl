@@ -25,9 +25,10 @@ varying highp vec3 vNormal;
 #define PI2 6.283185307179586
 
 #define LIGHT_WIDTH 20.0
-#define CAMERA_WIDTH 200.0
+#define CAMERA_WIDTH 360.0
 #define BASE_BIAS 0.00001
 #define MAX_ADAPTIVE_BIAS 0.005
+#define BIAS_SCALE 0.000002
 
 uniform sampler2D uShadowMap;
 
@@ -88,6 +89,18 @@ void uniformDiskSamples( const in vec2 randomSeed ) {
   }
 }
 
+float calBias(){
+    vec3 lightDir = normalize(uLightPos - vFragPos);
+    vec3 normalDir = normalize(vNormal);
+    float cos_LN = clamp(dot(lightDir, normalDir), 0.000001, 1.0);
+    float sin_LN = sqrt(1.0 - cos_LN * cos_LN);
+    float tan_LN = sin_LN / cos_LN;
+    float adaptive_bias = clamp(BIAS_SCALE * tan_LN, 0.0, MAX_ADAPTIVE_BIAS);
+    float bias = BASE_BIAS + adaptive_bias;
+    //float bias2 = 360.0 / 2048.0 * sin_LN;
+    return bias;
+}
+
 float findBlocker( sampler2D shadowMap,  vec2 uv, float zReceiver ) {
     //uniformDiskSamples(uv);
     poissonDiskSamples(uv);
@@ -95,17 +108,24 @@ float findBlocker( sampler2D shadowMap,  vec2 uv, float zReceiver ) {
     float block_depth = 0.0;
     for(int i = 0; i < BLOCKER_SEARCH_NUM_SAMPLES; i++){
       vec2 uv_bias = poissonDisk[i] * zReceiver * LIGHT_WIDTH / CAMERA_WIDTH / 2.0;
-      //vec2 uv_bias = poissonDisk[i] * 40.0 / 2048.0;//过小时，使得blocker和receiver距离较大的模型的软阴影边界明显
+      //vec2 uv_bias = poissonDisk[i] * 2.0 / 2048.0;//过小时，使得blocker和receiver距离较大的模型的软阴影边界明显
       float shadowDepth = unpack(texture2D(shadowMap, uv + uv_bias));
-      if(zReceiver > shadowDepth + EPS){
+      //if(shadowDepth > 0.99){
+      //  block_num++;
+      //  block_depth += unpack(texture2D(shadowMap, uv));
+      //}
+      if(zReceiver > shadowDepth){
         block_num++;
         block_depth += shadowDepth;
       }
     }
     if(block_num > 0.0){
-      return block_depth / block_num;
+      float avg_depth = block_depth / block_num;
+      if(zReceiver > avg_depth){
+        return avg_depth;
+      }
     }
-  	return -1.0;
+  	return 1.0;
 }
 
 float PCF(sampler2D shadowMap, vec4 coords, float radius) {
@@ -115,7 +135,7 @@ float PCF(sampler2D shadowMap, vec4 coords, float radius) {
   for(int i = 0; i < NUM_SAMPLES; i++){
     vec2 uv_bias = poissonDisk[i] * radius / 2048.0;
     float shadowDepth = unpack(texture2D(shadowMap, coords.xy + uv_bias));
-    if(coords.z > shadowDepth + EPS){
+    if(coords.z > shadowDepth){
       blocker++;
     }
   }
@@ -126,7 +146,7 @@ float PCSS(sampler2D shadowMap, vec4 coords){
 
   // STEP 1: avgblocker depth
   float avgBlocker = findBlocker(shadowMap, coords.xy, coords.z);
-  if(avgBlocker < 0.0){
+  if(avgBlocker > 0.999){
     return 1.0;
   }
 
@@ -143,16 +163,8 @@ float useShadowMap(sampler2D shadowMap, vec4 shadowCoord){
   vec4 packedShadowDepth = texture2D(shadowMap, shadowCoord.xy).rgba;
   float shadowDepth = unpack(packedShadowDepth);
 
-  vec3 lightDir = normalize(uLightPos);
-  vec3 normalDir = normalize(vNormal);
-  float cos_LN = clamp(dot(lightDir, normalDir), 0.000001, 1.0);
-  float sin_LN = sqrt(1.0 - cos_LN * cos_LN);
-  float tan_LN = sin_LN / cos_LN;
-  float adaptive_bias = clamp(tan_LN, 0.0, MAX_ADAPTIVE_BIAS);
-  float bias = BASE_BIAS + adaptive_bias;
-  float bias2 = 200.0 / 2048.0 * sin_LN;
 
-  if(shadowCoord.z > shadowDepth + EPS){
+  if(shadowCoord.z > shadowDepth + calBias()){
     return 0.0;
   }
   return 1.0;
@@ -190,12 +202,12 @@ void main(void) {
   visibility = PCSS(uShadowMap, vec4(shadowCoord, 1.0));
 
   vec3 phongColor = blinnPhong();
-  vec3 ambient = 0.20 * pow(texture2D(uSampler, vTextureCoord).rgb, vec3(2.2));
+  vec3 ambient = 0.15 * pow(texture2D(uSampler, vTextureCoord).rgb, vec3(2.2));
 
   gl_FragColor = vec4(phongColor * visibility + ambient, 1.0);
   //gl_FragColor = vec4(phongColor * visibility, 1.0);
   //gl_FragColor = vec4(findBlocker(uShadowMap, shadowCoord.xy, shadowCoord.z));
   //gl_FragColor = vec4(phongColor, 1.0);
   //gl_FragColor = (vPositionFromLight + 1.0) / 2.0;
-  //gl_FragColor = vec4(unpack(texture2D(uShadowMap, shadowCoord.xy)));
+  //gl_FragColor = vec4(unpack(texture2D(uShadowMap, shadowCoord.xy + vec2(0.1,0.1))));
 }
