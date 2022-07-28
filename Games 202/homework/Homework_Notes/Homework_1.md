@@ -333,6 +333,8 @@ vec2 uv_bias = poissonDisk[i] * zReceiver * LIGHT_WIDTH / CAMERA_WIDTH / 2.0;
 
 其中 2.0 是调整最终计算结果的一个 trick。
 
+实际上上面的方法也只能作为一个近似，并不准确。因为 Shadowmap 的绘制并不是以上图的视锥体产生的投影矩阵进行计算的，因此 Shadowmap 上的点对应的深度并不是准确的从光源向被着色的顶点发出的射线得到的深度（作业框架使用的是正交投影，Lecture 03 讲解的 Shadowmap 的绘制甚至是以光源中心为摄像机位置绘制的透视投影，与上面的表示刚好相反。并且若从一个顶点绘制 Shadowmap，则该 Shadowmap 对于其他顶点又是不准确的）。实际上，上图中光源正朝向平面，误差相对较小。若光源存在一定角度，误差就更大了。
+
 
 
 ##### penumbra size
@@ -378,13 +380,117 @@ float PCSS(sampler2D shadowMap, vec4 coords){
 
 
 
+## 优化&提高
+
+### 环境光照明
+
+在最终结果下加入环境光照明，避免阴影处全黑：
+
 ![add_ambient](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20202/homework_notes/hw1_add_ambient.png?raw=true)
 
-在最终结果下加入环境光照明，避免阴影处全黑。
+### 动态光源
+
+要让阴影产生动态效果要复杂一些，这需要每帧对 Shadowmap 进行更新。
+
+首先，模拟一个随时间不断变化的向量，作为光源的位置：
+
+```javascript
+// Handle light
+const timer = Date.now() * 0.00025;
+let lightPos = [ Math.sin(timer * 2) * 100, 
+100, 
+Math.cos(timer * 2) * 100 ];
+```
+
+设置渲染光源表示位置的 mesh 的位置以及实际光源对象的位置：
+
+```javascript
+this.lights[l].meshRender.mesh.transform.translate = lightPos;
+this.lights[l].entity.lightPos = lightPos;
+```
+
+在 Shadowmap 的绘制前，我们首先要清空 Shadowmap 的 fbo（frame buffer object）的缓冲（非常重要！），否则每帧绘制的 Shadowmap 会发生叠加。由于默认绑定的 fbo 是屏幕输出，因此首先要将绑定的 fbo 修改为 Shadowmap ，再进行 clear 操作：
+
+```javascript
+gl.bindFramebuffer(gl.FRAMEBUFFER, this.lights[l].entity.fbo);
+gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+```
+
+在绘制 Shadowmap 时，对于每一个 shadowMesh ，重新计算 lightMVP 矩阵，并设置 uniform，再进行绘制：
+
+```javascript
+let Translation = this.shadowMeshes[i].mesh.transform.translate;
+let Scale = this.shadowMeshes[i].mesh.transform.scale;                   
+let lightMVP = this.lights[l].entity.CalcLightMVP(Translation, Scale);          
+this.shadowMeshes[i].material.uniforms.uLightMVP = { type: 'matrix4fv', value: lightMVP };
+this.shadowMeshes[i].draw(this.camera);
+```
+
+在实际的绘制 pass 中，同样重新计算 lightMVP 矩阵，并设置 uniform，再进行绘制：
+
+```javascript
+let Translation = this.meshes[i].mesh.transform.translate;
+let Scale = this.meshes[i].mesh.transform.scale;
+let lightMVP = this.lights[l].entity.CalcLightMVP(Translation, Scale);
+this.meshes[i].material.uniforms.uLightMVP = { type: 'matrix4fv', value: lightMVP };
+this.meshes[i].draw(this.camera);
+```
 
 
 
-很多情况下最终渲染出现条状瑕疵，排除自遮挡问题后依旧存在，可能是浮点计算的精度问题。
+由于光源在场景中运动，因此需要更大范围的投影宽度以及更小的平面才能保证阴影的完整性：
+
+```javascript
+// DirectionalLight.js
+mat4.ortho(projectionMatrix, -180, 180, -180, 180, 1.0, 500);
+// engine.js
+let floorTransform = setTransform(0, 0, -30, 3.3, 3.3, 3.3);
+```
+
+否则就会出现类似下面的问题：
+
+![small_ortho_size_problem](E:\Backup Folder\LiHaoyu\github\MyImageBed\My-Learn\Games 202\homework_notes\hw1_small_ortho_size_problem.png)
+
+
+
+### 自适应的 Shadowmap Bias Size
+
+动态光源使得出现阴影瑕疵的概率大大提高，特别是容易出现 Graze Angle 的距光源较远处（在 Shadowmap 没有越界的情况下），如地图边缘。此时，固定的 bias 的作用就十分有限了，通过计算一个自适应的 bias 值能够一定程度解决上面的问题（但会随之发生漏光现象，且 Graze Angle 较大处依旧难以解决）：
+
+```glsl
+float calBias(){
+    vec3 lightDir = normalize(uLightPos - vFragPos);
+    vec3 normalDir = normalize(vNormal);
+    float cos_LN = clamp(dot(lightDir, normalDir), 0.000001, 1.0);
+    float sin_LN = sqrt(1.0 - cos_LN * cos_LN);
+    float tan_LN = sin_LN / cos_LN;
+    float adaptive_bias = clamp(tan_LN, 0.0, MAX_ADAPTIVE_BIAS);
+    float bias = BASE_BIAS + adaptive_bias;
+    return bias;
+}
+```
+
+计算平均遮挡深度时建议不应用 bias ，会导致计算结果相对不准确。接受漏光的结果或者是接受自遮挡的结果，需要一定的取舍（个人倾向于后者）。
+
+
+
+## 遗留问题
+
+1. 很多情况下最终渲染出现条状瑕疵，排除自遮挡问题后依旧存在，可能是浮点计算的精度问题（因为只计算 shading 依旧会有这个问题）
+
+   ![image-20220729011513171](C:\Users\52781\AppData\Roaming\Typora\typora-user-images\image-20220729011513171.png)
+
+2. 平均遮挡深度依旧会在 Graze Angle 较大的情况下不准确，即随着 Graze Angle 的增大，自遮挡的问题愈发明显，导致平均深度减小，在可视化中表现为 Graze Angle 越大的地方越黑
+
+   ![graze_angle_avg_depth](E:\Backup Folder\LiHaoyu\github\MyImageBed\My-Learn\Games 202\homework_notes\hw1_graze_angle_avg_depth.png)
+
+   此时若应用自适应的 bias 值，一部分的问题会被解决，但在 Graze Angle 超过 bias 能解决的最大值时，会产生剧烈的平均遮挡深度变化
+
+   ![graze_angle_avg_depth_with_bias](E:\Backup Folder\LiHaoyu\github\MyImageBed\My-Learn\Games 202\homework_notes\hw1_graze_angle_avg_depth_with_bias.png)
+
+clearbuffer 1.0
+
+
 
 
 
