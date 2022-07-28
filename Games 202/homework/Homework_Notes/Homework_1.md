@@ -374,7 +374,7 @@ float PCSS(sampler2D shadowMap, vec4 coords){
 
 ![result_PCSS](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20202/homework_notes/hw1_result_PCSS.png?raw=true)
 
-可以看到，在遮挡点距离顶点较近时阴影较锐意，反之则较模糊。
+可以看到，在遮挡点距离顶点较近时阴影较锐利，反之则较模糊。
 
 
 
