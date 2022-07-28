@@ -25,7 +25,7 @@ varying highp vec3 vNormal;
 #define PI2 6.283185307179586
 
 #define LIGHT_WIDTH 20.0
-#define CAMERA_WIDTH 240.0
+#define CAMERA_WIDTH 200.0
 #define BASE_BIAS 0.00001
 #define MAX_ADAPTIVE_BIAS 0.005
 
@@ -94,7 +94,7 @@ float findBlocker( sampler2D shadowMap,  vec2 uv, float zReceiver ) {
     float block_num = 0.0;
     float block_depth = 0.0;
     for(int i = 0; i < BLOCKER_SEARCH_NUM_SAMPLES; i++){
-      vec2 uv_bias = poissonDisk[i] * zReceiver * LIGHT_WIDTH / CAMERA_WIDTH / 1.5;
+      vec2 uv_bias = poissonDisk[i] * zReceiver * LIGHT_WIDTH / CAMERA_WIDTH / 2.0;
       //vec2 uv_bias = poissonDisk[i] * 40.0 / 2048.0;//过小时，使得blocker和receiver距离较大的模型的软阴影边界明显
       float shadowDepth = unpack(texture2D(shadowMap, uv + uv_bias));
       if(zReceiver > shadowDepth + EPS){
