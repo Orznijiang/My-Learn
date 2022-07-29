@@ -449,13 +449,17 @@ let floorTransform = setTransform(0, 0, -30, 3.3, 3.3, 3.3);
 
 否则就会出现类似下面的问题：
 
-![small_ortho_size_problem](E:\Backup Folder\LiHaoyu\github\MyImageBed\My-Learn\Games 202\homework_notes\hw1_small_ortho_size_problem.png)
+![small_ortho_size_problem](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20202/homework_notes/hw1_small_ortho_size_problem.png?raw=true)
+
+效果（有损压缩）：
+
+![dynamic light with bias](E:\My Documents\Github\MyImageBed\My-Learn\Games 202\homework_notes\hw1_dynamic_light_with_bias.gif)
 
 
 
 ### 自适应的 Shadowmap Bias Size
 
-动态光源使得出现阴影瑕疵的概率大大提高，特别是容易出现 Graze Angle 的距光源较远处（在 Shadowmap 没有越界的情况下），如地图边缘。此时，固定的 bias 的作用就十分有限了，通过计算一个自适应的 bias 值能够一定程度解决上面的问题（但会随之发生漏光现象，且 Graze Angle 较大处依旧难以解决）：
+动态光源使得出现阴影瑕疵的概率大大提高，特别是容易出现 Graze Angle 的顶点处（在 Shadowmap 没有越界的情况下），如地图边缘。此时，固定的 bias 的作用就十分有限了，通过计算一个自适应的 bias 值能够一定程度解决上面的问题（但会随之发生漏光现象，且 Graze Angle 较大处依旧难以解决）：
 
 ```glsl
 float calBias(){
@@ -470,7 +474,23 @@ float calBias(){
 }
 ```
 
-计算平均遮挡深度时建议不应用 bias ，会导致计算结果相对不准确。接受漏光的结果或者是接受自遮挡的结果，需要一定的取舍（个人倾向于后者）。
+当计算 PCF 或者是平均的遮挡深度时，还需要根据采样半径的大小对 bias 值进行额外的调整：
+
+```glsl
+if(coords.z > shadowDepth + (1.0 + radius) * bias_normal()){
+  blocker++;
+}
+```
+
+计算自适应的 bias 的方法有很多，如基于 depth 的方法和基于 normal 的方法。此外，还可以使用在渲染 Shadowmap 时剔除背面的方法来消除阴影瑕疵，但是这种方法同样存在局限性，它只对封闭的模型有效，且背面依旧容易出现阴影瑕疵。
+
+接受漏光的结果或者是接受自遮挡的结果，需要一定的取舍。
+
+应用 bias 前后效果对比：
+
+![no_bias_vs_bias](E:\My Documents\Github\MyImageBed\My-Learn\Games 202\homework_notes\hw1_no_bias_vs_bias.png)
+
+
 
 
 
@@ -478,30 +498,54 @@ float calBias(){
 
 1. 很多情况下最终渲染出现条状瑕疵，排除自遮挡问题后依旧存在，可能是浮点计算的精度问题（因为只计算 shading 依旧会有这个问题）
 
-   ![image-20220729011513171](C:\Users\52781\AppData\Roaming\Typora\typora-user-images\image-20220729011513171.png)
+   ![shading_precision](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20202/homework_notes/hw1_shading_precision.png?raw=true)
 
-2. 平均遮挡深度依旧会在 Graze Angle 较大的情况下不准确，即随着 Graze Angle 的增大，自遮挡的问题愈发明显，导致平均深度减小，在可视化中表现为 Graze Angle 越大的地方越黑
+2. 平均遮挡深度会在 plane 的边缘不准确，在可视化中表现为越靠近边缘的地方越黑（平均遮挡深度越小）
 
-   ![graze_angle_avg_depth](E:\Backup Folder\LiHaoyu\github\MyImageBed\My-Learn\Games 202\homework_notes\hw1_graze_angle_avg_depth.png)
+   ![graze_angle_avg_depth](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20202/homework_notes/hw1_graze_angle_avg_depth.png?raw=true)
 
    此时若应用自适应的 bias 值，一部分的问题会被解决，但在 Graze Angle 超过 bias 能解决的最大值时，会产生剧烈的平均遮挡深度变化
 
-   ![graze_angle_avg_depth_with_bias](E:\Backup Folder\LiHaoyu\github\MyImageBed\My-Learn\Games 202\homework_notes\hw1_graze_angle_avg_depth_with_bias.png)
-
-clearbuffer 1.0
-
-
+   ![graze_angle_avg_depth_with_bias](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20202/homework_notes/hw1_graze_angle_avg_depth_with_bias.png?raw=true)
+   
+   注意到在刷新帧缓存时，默认的刷新颜色为纯黑：
+   
+   ```javascript
+   gl.clearColor(0.0, 0.0, 0.0, 1.0); // Clear to black, fully opaque
+   ```
+   
+   这是标准颜色缓冲的刷新方案，对于 Shadowmap 来说，如果默认刷新为纯黑，则没有物体渲染的区域为纯黑，当对 Shadowmap 的采样取到这个区域时，就会判断为被遮挡，使得平均遮挡深度降低，从而出现上面的问题。因此，需要将 Shadowmap 的clearcolor 设置为纯白：
+   
+   ```javascript
+   gl.bindFramebuffer(gl.FRAMEBUFFER, this.lights[l].entity.fbo);
+   gl.clearColor(1.0, 1.0, 1.0, 1.0);
+   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+   ```
+   
+   这样就能解决上面 plane 边缘发黑的问题。
 
 
 
 ## 参考链接
 
 * [1] 代码框架分析：https://blog.csdn.net/qq_41835314/article/details/125619239
+
 * [2] glMatrix：[JSDoc: Module: mat4 (glmatrix.net)](https://glmatrix.net/docs/module-mat4.html)
+
 * [3] LookAt：https://learnopengl-cn.github.io/01%20Getting%20started/09%20Camera/
+
 * [4] gl_FragCoord：https://zhuanlan.zhihu.com/p/102068376
+
 * [5] shadow bias：https://zhuanlan.zhihu.com/p/370951892
+
 * [6] [Sampling function (codepen.io)](https://codepen.io/arkhamwjz/pen/MWbqJNG?editors=1010)
+
 * [7] https://games-cn.org/forums/topic/yigeguanyuzuoyeyiwenti/
+
 * [8] https://games-cn.org/forums/topic/zuoye1dezhengjiaojuzhencanshudeyihuo/
+
 * [9] https://blog.csdn.net/qq_41835314/article/details/125726339?spm=1001.2014.3001.5502
+
+* [10] https://learnopengl-cn.github.io/05%20Advanced%20Lighting/03%20Shadows/01%20Shadow%20Mapping/
+
+  
