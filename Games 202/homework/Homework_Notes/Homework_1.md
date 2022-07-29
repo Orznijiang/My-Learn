@@ -453,7 +453,7 @@ let floorTransform = setTransform(0, 0, -30, 3.3, 3.3, 3.3);
 
 效果（有损压缩）：
 
-![dynamic light with bias](E:\My Documents\Github\MyImageBed\My-Learn\Games 202\homework_notes\hw1_dynamic_light_with_bias.gif)
+![dynamic light with bias](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20202/homework_notes/hw1_dynamic_light_with_bias.gif?raw=true)
 
 
 
@@ -488,7 +488,7 @@ if(coords.z > shadowDepth + (1.0 + radius) * bias_normal()){
 
 应用 bias 前后效果对比：
 
-![no_bias_vs_bias](E:\My Documents\Github\MyImageBed\My-Learn\Games 202\homework_notes\hw1_no_bias_vs_bias.png)
+![no_bias_vs_bias](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20202/homework_notes/hw1_no_bias_vs_bias.png?raw=true)
 
 
 
@@ -502,11 +502,11 @@ if(coords.z > shadowDepth + (1.0 + radius) * bias_normal()){
 
 2. 平均遮挡深度会在 plane 的边缘不准确，在可视化中表现为越靠近边缘的地方越黑（平均遮挡深度越小）
 
-   ![graze_angle_avg_depth](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20202/homework_notes/hw1_graze_angle_avg_depth.png?raw=true)
+   ![border_avg_depth](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20202/homework_notes/hw1_graze_angle_avg_depth.png?raw=true)
 
    此时若应用自适应的 bias 值，一部分的问题会被解决，但在 Graze Angle 超过 bias 能解决的最大值时，会产生剧烈的平均遮挡深度变化
 
-   ![graze_angle_avg_depth_with_bias](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20202/homework_notes/hw1_graze_angle_avg_depth_with_bias.png?raw=true)
+   ![border_avg_depth_with_bias](https://github.com/Orznijiang/MyImageBed/blob/main/My-Learn/Games%20202/homework_notes/hw1_graze_angle_avg_depth_with_bias.png?raw=true)
    
    注意到在刷新帧缓存时，默认的刷新颜色为纯黑：
    
