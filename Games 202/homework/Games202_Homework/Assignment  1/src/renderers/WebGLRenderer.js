@@ -48,6 +48,8 @@ class WebGLRenderer {
                 gl.bindFramebuffer(gl.FRAMEBUFFER, this.lights[l].entity.fbo);
                 gl.clearColor(1.0, 1.0, 1.0, 1.0);
                 gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+                //gl.enable(gl.CULL_FACE);
+                //gl.cullFace(gl.FRONT);
                 //console.log(this.lights[l].entity.fbo);
                 for (let i = 0; i < this.shadowMeshes.length; i++) {
                     let Translation = this.shadowMeshes[i].mesh.transform.translate;
@@ -55,11 +57,12 @@ class WebGLRenderer {
                     let lightMVP = this.lights[l].entity.CalcLightMVP(Translation, Scale);          
                     this.shadowMeshes[i].material.uniforms.uLightMVP = { type: 'matrix4fv', value: lightMVP };
                     //console.log(this.shadowMeshes[i].material.uniforms.uLightMVP);
-                    //console.log(this.shadowMeshes.length);
-                    
+                    //console.log(this.shadowMeshes.length);                
                     
                     this.shadowMeshes[i].draw(this.camera);
                 }
+                //gl.disable(gl.CULL_FACE);
+                //gl.cullFace(gl.BACK);
             }
 
             // Camera pass

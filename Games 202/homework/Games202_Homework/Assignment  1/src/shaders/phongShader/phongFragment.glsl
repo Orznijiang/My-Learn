@@ -26,9 +26,13 @@ varying highp vec3 vNormal;
 
 #define LIGHT_WIDTH 20.0
 #define CAMERA_WIDTH 360.0
+#define SHADOWMAP_RESOLUSION 2048.0
 #define BASE_BIAS 0.00001
 #define MAX_ADAPTIVE_BIAS 0.005
-#define BIAS_SCALE 0.000002
+#define BIAS_SCALE 0.5
+
+#define C_DEPTH 1.0
+#define C_NORMAL 1.0
 
 uniform sampler2D uShadowMap;
 
@@ -90,14 +94,36 @@ void uniformDiskSamples( const in vec2 randomSeed ) {
 }
 
 float calBias(){
-    vec3 lightDir = normalize(uLightPos - vFragPos);
+    //vec3 lightDir = normalize(uLightPos - vFragPos);
+    vec3 lightDir = normalize(uLightPos);
     vec3 normalDir = normalize(vNormal);
     float cos_LN = clamp(dot(lightDir, normalDir), 0.000001, 1.0);
     float sin_LN = sqrt(1.0 - cos_LN * cos_LN);
     float tan_LN = sin_LN / cos_LN;
-    float adaptive_bias = clamp(BIAS_SCALE * tan_LN, 0.0, MAX_ADAPTIVE_BIAS);
-    float bias = BASE_BIAS + adaptive_bias;
-    //float bias2 = 360.0 / 2048.0 * sin_LN;
+    float scale = 1.0 / SHADOWMAP_RESOLUSION / 2.0;
+    float adaptive_bias = clamp(scale * tan_LN, 0.0, MAX_ADAPTIVE_BIAS);
+    float bias = BASE_BIAS + BIAS_SCALE * adaptive_bias;
+    return bias;
+}
+
+float bias_depth(){
+    vec3 lightDir = normalize(uLightPos);
+    vec3 normalDir = normalize(vNormal);
+    float cos_LN = clamp(dot(lightDir, normalDir), 0.000001, 1.0);
+    float sin_LN = sqrt(1.0 - cos_LN * cos_LN);
+    float tan_LN = sin_LN / cos_LN;
+    float scale = 1.0 / SHADOWMAP_RESOLUSION / 2.0;
+    float bias = scale * tan_LN * C_DEPTH;
+    return bias;
+}
+
+float bias_normal(){
+    vec3 lightDir = normalize(uLightPos);
+    vec3 normalDir = normalize(vNormal);
+    float cos_LN = clamp(dot(lightDir, normalDir), 0.000001, 1.0);
+    float sin_LN = sqrt(1.0 - cos_LN * cos_LN);
+    float scale = 1.0 / SHADOWMAP_RESOLUSION / 2.0;
+    float bias = scale * sin_LN * C_NORMAL;
     return bias;
 }
 
@@ -107,14 +133,12 @@ float findBlocker( sampler2D shadowMap,  vec2 uv, float zReceiver ) {
     float block_num = 0.0;
     float block_depth = 0.0;
     for(int i = 0; i < BLOCKER_SEARCH_NUM_SAMPLES; i++){
-      vec2 uv_bias = poissonDisk[i] * zReceiver * LIGHT_WIDTH / CAMERA_WIDTH / 2.0;
-      //vec2 uv_bias = poissonDisk[i] * 2.0 / 2048.0;//过小时，使得blocker和receiver距离较大的模型的软阴影边界明显
+      float radius = zReceiver * LIGHT_WIDTH / CAMERA_WIDTH / 2.0 * SHADOWMAP_RESOLUSION;
+      vec2 uv_bias = poissonDisk[i] * radius / SHADOWMAP_RESOLUSION;
+      //vec2 uv_bias = poissonDisk[i] * 2.0 / SHADOWMAP_RESOLUSION;//过小时，使得blocker和receiver距离较大的模型的软阴影边界明显
       float shadowDepth = unpack(texture2D(shadowMap, uv + uv_bias));
-      //if(shadowDepth > 0.99){
-      //  block_num++;
-      //  block_depth += unpack(texture2D(shadowMap, uv));
-      //}
-      if(zReceiver > shadowDepth){
+      
+      if(zReceiver > shadowDepth + (1.0 + radius) * bias_normal()){
         block_num++;
         block_depth += shadowDepth;
       }
@@ -133,9 +157,10 @@ float PCF(sampler2D shadowMap, vec4 coords, float radius) {
   poissonDiskSamples(coords.xy);
   float blocker = 0.0;
   for(int i = 0; i < NUM_SAMPLES; i++){
-    vec2 uv_bias = poissonDisk[i] * radius / 2048.0;
+    vec2 uv_bias = poissonDisk[i] * radius / SHADOWMAP_RESOLUSION;
     float shadowDepth = unpack(texture2D(shadowMap, coords.xy + uv_bias));
-    if(coords.z > shadowDepth){
+    float uv_bias_length = sqrt(uv_bias.x * uv_bias.x + uv_bias.y * uv_bias.y);
+    if(coords.z > shadowDepth + (1.0 + radius) * bias_normal()){
       blocker++;
     }
   }
@@ -164,7 +189,7 @@ float useShadowMap(sampler2D shadowMap, vec4 shadowCoord){
   float shadowDepth = unpack(packedShadowDepth);
 
 
-  if(shadowCoord.z > shadowDepth + calBias()){
+  if(shadowCoord.z > shadowDepth + bias_normal()){
     return 0.0;
   }
   return 1.0;
@@ -206,6 +231,7 @@ void main(void) {
 
   gl_FragColor = vec4(phongColor * visibility + ambient, 1.0);
   //gl_FragColor = vec4(phongColor * visibility, 1.0);
+  //gl_FragColor = vec4(vec3(visibility), 1.0);
   //gl_FragColor = vec4(findBlocker(uShadowMap, shadowCoord.xy, shadowCoord.z));
   //gl_FragColor = vec4(phongColor, 1.0);
   //gl_FragColor = (vPositionFromLight + 1.0) / 2.0;
